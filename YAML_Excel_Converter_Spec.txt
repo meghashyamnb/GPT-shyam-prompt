@@ -1,0 +1,84 @@
+PROJECT-ID: YAML-EXCEL-CONVERTER-ROWERR-2025-0825
+
+# YAML Excel → YAML Converter (Single-Sheet) with Validations + Row Error Reporting
+
+## Goal
+Convert a single-sheet Excel file (sheet `data`) into a YAML file:
+
+creditorAccounts:
+  - accountNumber:'<value>'
+      paymentLimit:'<value>' #<comment>
+fourthParties:
+  - nzbn:'<13-digit>'
+      paymentLimit:'<value>' #<comment>
+
+All values single-quoted, inline comments from Excel `comment` column.
+
+## Input format (single sheet)
+- Sheet name: `data`
+- Columns: type, id, paymentLimit, comment
+  - type: creditorAccount or fourthParty
+  - id: accountNumber (for creditorAccount) or NZBN (13 digits, for fourthParty)
+  - paymentLimit: string/number (quoted in YAML)
+  - comment: inline YAML comment
+
+## Validations (fail if violated)
+- type must be creditorAccount or fourthParty
+- NZBN: 13 digits, unique (fail if duplicates and flag set)
+- accountNumber: unique (fail if duplicates and flag set)
+- paymentLimit:
+  - fail if non-numeric when `--require-numeric-paymentlimit`
+  - enforce thresholds with `--max-fourth` and `--max-creditor`
+
+## Error reporting
+1. Console summary counts
+2. Detailed per-row errors:
+   Row <excel_row>: <type> — <reason> — id=<id> paymentLimit=<paymentLimit>
+   (excel_row is Excel row number, first data row is 2)
+3. CSV file `validation_errors.csv` (path configurable with --error-report)
+
+## Behavior flags
+- --dedupe-nzbn (drop duplicates if no errors)
+- --dedupe-accounts
+- --fail-on-duplicate-nzbn
+- --fail-on-duplicate-account
+- --require-numeric-paymentlimit
+- --max-fourth <float>
+- --max-creditor <float>
+
+## Script 1: excel_to_yaml_single.py
+- Shebang: #!/usr/bin/env python3
+- Defaults:
+  - Input: ~/Documents/input.xlsx
+  - Output: ~/Documents/output.yaml
+  - Error CSV: validation_errors.csv next to output
+- CLI args as described above
+- Always single-quote YAML values
+
+## Script 2: run_yaml.sh (Mac wrapper)
+- Shebang: #!/usr/bin/env bash
+- Locates excel_to_yaml_single.py (same folder or ~/Documents)
+- Input default: ~/Documents/input.xlsx (override by arg1)
+- Output default: ~/Documents/output.yaml (override by arg2)
+- Python override: PYTHON_BIN=.venv/bin/python
+- Auto-install pandas, openpyxl (venv → normal install; system → --user)
+- Runs strict mode:
+  --fail-on-duplicate-nzbn --fail-on-duplicate-account --require-numeric-paymentlimit --max-fourth 5000 --max-creditor 1
+
+## Test datasets
+1. yaml_single_sheet_template.xlsx (headers only)
+2. test_single_input_500_valid.xlsx
+   - 250 fourthParty (valid 13-digit NZBN, <=5000)
+   - 250 creditorAccount (valid account, <=1.0)
+3. test_single_input_500_invalid.xlsx
+   - fourthParty errors (250): 150 duplicate NZBN, 50 invalid length, 50 over-limit
+   - creditorAccount errors (250): 150 duplicate accounts, 50 non-numeric, 50 over-limit
+4. test_single_input_1000_mixed.xlsx
+   - 500 valid + 500 invalid (shuffled)
+
+## Acceptance
+- Valid file → YAML emitted, no errors
+- Invalid file → summary + per-row details + CSV, exit code 3, no YAML
+- Mixed file → fail as above
+- Wrapper handles venv/system pip installs
+- YAML format exactly matches required indentation and quoting
