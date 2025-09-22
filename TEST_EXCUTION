@@ -1,0 +1,30 @@
+Test Execution Summary
+
+The testing for Document Directory Request and Statement Retrieval was performed in the local environment.
+Due to downstream dependency services not being available, complete end-to-end validation could not be carried out.
+
+Scope Covered
+
+Verified core business logic locally using unit test cases.
+
+Ensured that the document directory request flow is working as expected for available statements within the supported date range.
+
+Validated basic response structure and statement availability rules at a unit level.
+
+Scope Excluded / Not Covered
+
+Integration testing with downstream systems (service not available).
+
+Performance testing – explicitly out of scope for this release.
+
+Negative & error handling scenarios – not validated in this cycle.
+
+Response to Third Party – Statement Return Rules – excluded from this test run.
+
+Boundary and edge case scenarios (e.g., leap year, invalid ranges, large payloads) – not in scope for this cycle.
+
+Remarks
+
+Testing was limited to unit-level validation due to environment constraints.
+
+Full integration, negative/error handling, and boundary testing will be executed once downstream systems are available.
