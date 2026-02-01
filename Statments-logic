@@ -1,0 +1,277 @@
+✅ A. INPUT COMBINATION SCENARIOS (From / To)
+A1. Only fromStatementDateTime
+
+Valid date (with time)
+
+Valid date (date only → defaults 00:00 UTC)
+
+With timezone offset (ignored)
+
+from = today
+
+from = today + 1 (future)
+
+from exactly 2 years ago
+
+from > 2 years ago (adjustment)
+
+from on leap day (29 Feb)
+
+A2. Only toStatementDateTime
+
+Valid date
+
+Date with time + timezone offset
+
+to = today
+
+to > today (future → adjust)
+
+to exactly 2 years ago
+
+to < today − 2 years (full adjustment)
+
+to on month end (30/31)
+
+A3. Both from and to
+
+Valid range (from < to)
+
+from == to
+
+from > to ❌ error
+
+Range < 2 years
+
+Range = exactly 2 years
+
+Range > 2 years (adjust)
+
+from has time, to has time
+
+Mixed timezone offsets
+
+Leap year inside range
+
+A4. Neither from nor to
+
+Default last 2 years
+
+Default behaviour repeated on different days
+
+Default with no statements
+
+Default with first-ever statement only
+
+✅ B. DATE ADJUSTMENT & NORMALIZATION
+B1. Time handling
+
+Time ignored, date-only logic verified
+
+Offset ignored (UTC assumed)
+
+Same instant but different date strings → different results
+
+B2. Minus-1-day logic (previous statement detection)
+
+Statement exactly on fromDate − 1
+
+Statement exactly on fromDate
+
+No statement on fromDate − 1
+
+Multiple statements on fromDate − 1
+
+B3. 2-Year + 1-Day adjustment
+
+Oldest allowed date = to − 2y − 1d
+
+Statement exactly on cutoff date
+
+Statement just before cutoff (excluded)
+
+Leap year adjustment correctness
+
+B4. Future date adjustment
+
+to > today → adjusted silently
+
+from > today → behaviour verified (empty vs error)
+
+Both dates in future
+
+✅ C. DOCUMENT DIRECTORY RESPONSE VARIANTS (Mocked)
+C1. Normal responses
+
+Ordered statement dates
+
+Unordered statement dates
+
+Duplicate statement dates
+
+Same-day multiple statements
+
+Irregular cadence (monthly / quarterly / random)
+
+C2. Empty / sparse responses
+
+No documents returned
+
+Only one document returned
+
+Documents exist but all excluded by logic
+
+C3. Boundary-heavy responses
+
+Statement on every boundary date
+
+Statement only before requested range
+
+Statement only after requested range
+
+✅ D. PREVIOUS-STATEMENT DEPENDENCY (CRITICAL)
+D1. First-ever statement
+
+Only one statement exists → not returned
+
+D2. Continuity rules
+
+Statement with valid predecessor → returned
+
+Statement without predecessor → excluded
+
+Predecessor exists outside requested range
+
+Predecessor exists outside adjusted range
+
+D3. Missing intermediate statements
+
+Missing month(s)
+
+Missing multiple consecutive periods
+
+Still return statements with valid predecessor
+
+D4. Mixed validity
+
+Some statements valid, some excluded
+
+Ensure filtering is per-statement, not all-or-nothing
+
+✅ E. PAGINATION SCENARIOS (MOCK-FRIENDLY)
+E1. Pagination basics
+
+Page size = 1
+
+Page size = max
+
+Single page
+
+Multiple pages
+
+E2. Pagination + continuity
+
+Predecessor on previous page
+
+Predecessor not returned but exists
+
+Page split between dependent statements
+
+E3. Pagination consistency
+
+Re-fetch page 1 after page 2
+
+Retry same page → same results
+
+No duplicates across pages
+
+No missing statements
+
+✅ F. STATEMENT ID BEHAVIOUR
+F1. Determinism
+
+Same request → same statementIds
+
+Different pagination → same statementIds
+
+Order does not affect IDs
+
+F2. Stability
+
+Repeat request later (mocked “time passes”)
+
+New statement added later → old IDs unchanged
+
+Backdated statement added → appears correctly
+
+F3. Uniqueness
+
+Same date statements have unique IDs
+
+No ID collision across pages
+
+✅ G. NEGATIVE & INVALID INPUTS
+
+Invalid date format
+
+Invalid timezone format
+
+Partial datetime string
+
+Garbage values
+
+Very large date range (stress logic, not performance)
+
+Null vs missing fields
+
+Expected:
+
+Clear error OR documented behaviour
+
+No silent incorrect returns
+
+✅ H. ORDERING GUARANTEES
+
+Statements sorted chronologically
+
+Same-day ordering deterministic
+
+Order stable across calls
+
+Order stable across pagination
+
+✅ I. CONSISTENCY & REPLAY (MOCK-LEVEL)
+
+Same request today vs today+1 day → expected delta
+
+Replay request → deterministic output
+
+Filtering logic does not depend on call order
+
+✅ J. RESPONSE SHAPE & METADATA
+
+(If supported)
+
+Returned statements within effective range
+
+Count matches expectation
+
+Pagination metadata correct
+
+No reference to excluded statements
+
+✅ K. OUT-OF-SCOPE (INTENTIONALLY NOT TESTED)
+
+Document these explicitly:
+
+Authentication / OAuth
+
+Consent lifecycle
+
+Real performance
+
+Infra/network failures
+
+Real DST drift across services
+
+This protects you during sign-off.
