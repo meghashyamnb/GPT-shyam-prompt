@@ -1,0 +1,33 @@
+Analyze this existing Playwright automation codebase and identify the implementation style used by the team.
+
+I want to follow the same coding pattern already used in this repository.
+
+Please tell me:
+
+1. What framework structure is being used?
+2. What coding style is followed for:
+   - file names
+   - class names
+   - method names
+   - variable names
+   - test names
+3. What patterns are used?
+   - Page Object Model
+   - fixtures
+   - helper/util classes
+   - base page
+   - test data separation
+   - custom commands/wrappers
+4. How locators are written in this project
+5. How assertions are written
+6. How reusable methods are structured
+7. How test data is managed
+8. What conventions I should follow when adding new automation code
+9. What anti-patterns or inconsistencies already exist
+10. Give me a checklist I should follow before committing new code
+
+Important:
+- Infer only from the existing code in this repository
+- Do not give generic Playwright best practices unless they match this codebase
+- Mention exact files/folders as evidence when possible
+- If something is unclear, say "not enough evidence in current codebase"
