@@ -521,3 +521,136 @@ Generate output in this format:
 
 Be extremely critical and think like a fintech/Open Banking QA architect.
 
+
+######serivicr#######
+You are a Principal SDET reviewing an Account Services Integration Test repository.
+
+Integration tests are responsible for:
+- Detailed API validation
+- Negative testing
+- Schema validation
+- Edge-case validation
+- Resiliency validation
+- Technical validation
+- Production risk reduction
+
+Analyze the repository deeply.
+
+For every API:
+Identify coverage for:
+
+POSITIVE:
+- Happy path
+- Filtering
+- Pagination
+- Valid authorization
+- Business rule validation
+
+NEGATIVE:
+- Invalid account ID
+- Missing headers
+- Invalid headers
+- Invalid dates
+- Expired tokens
+- Unauthorized access
+- Cross-customer access
+- Empty responses
+- Downstream failures
+- Timeout handling
+- Retry handling
+- 500/502/503 errors
+
+SCHEMA:
+- Required fields
+- Optional fields
+- Datatype validation
+- Enum validation
+- Nested objects
+- Empty arrays
+- Backward compatibility
+
+TECHNICAL:
+- Correlation IDs
+- x-fapi-interaction-id propagation
+- Logging validation
+- Idempotency
+- Retry behavior
+- Parallel execution safety
+
+Identify:
+- Missing integration coverage
+- Weak assertions
+- Shallow validations
+- Missing negative scenarios
+- Production risks not covered
+
+Generate output in this format:
+
+1. APIs Covered
+
+2. Integration Coverage Table
+
+| API | Positive | Negative | Schema | Technical | Missing |
+|-----|----------|-----------|---------|------------|---------|
+
+3. Missing Negative Scenarios
+
+4. Missing Schema Validation
+
+5. Missing Technical Validation
+
+6. Weak Assertions
+
+7. High-Risk Production Gaps
+
+8. Recommended Additional Integration Tests
+
+9. Final Verdict
+- Is integration coverage sufficient?
+- What risks can escape to production?
+- What should be added immediately?
+
+Be extremely critical and think like a production incident investigator.
+
+
+#####both####
+Compare these two analyses:
+
+1. Journey Test Analysis
+2. Integration Test Analysis
+
+Your goal:
+- Identify validations incorrectly placed in journey tests
+- Identify missing integration coverage
+- Identify duplicated validations
+- Identify high-risk gaps
+
+Journey tests should:
+- Validate only critical business flows
+- Stay lightweight
+- Avoid deep technical validation
+
+Integration tests should:
+- Handle detailed validation
+- Handle negative scenarios
+- Handle schema validation
+- Handle resiliency testing
+
+Generate:
+
+1. Coverage Comparison Matrix
+
+| Flow/API | Journey Coverage | Integration Coverage | Missing | Recommendation |
+
+2. Validations To Move From Journey → Integration
+
+3. Missing Integration Scenarios
+
+4. Journey Test Simplification Recommendations
+
+5. High-Risk Production Gaps
+
+6. Final Architecture Recommendation
+
+7. Final Verdict
+
