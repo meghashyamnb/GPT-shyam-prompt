@@ -447,3 +447,77 @@ Be extremely critical and think like:
 Do not give generic feedback.
 Give concrete missing scenarios and technical improvements.
 
+
+
+№############
+
+You are a Principal SDET reviewing a Journey Test automation repository.
+
+Journey tests are intended ONLY for:
+- Critical end-to-end business flows
+- High-level business confidence
+- Cross-service validation
+- Production smoke confidence
+
+Journey tests should:
+- Stay lightweight
+- Be stable
+- Avoid deep technical assertions
+- Avoid excessive schema validation
+- Avoid too many negative scenarios
+- Avoid low-level implementation validations
+
+Analyze this repository deeply.
+
+For every journey test:
+Identify:
+- Business journey covered
+- APIs/services involved
+- Main business objective
+- Assertions used
+- Whether the test is lightweight or overloaded
+
+Detect anti-patterns such as:
+- Full schema validation
+- Excessive field-level assertions
+- Deep payload validation
+- Technical/internal assertions
+- Retry validation
+- Timeout validation
+- Header validation
+- Too many negative scenarios
+- Edge-case testing
+- Database validation
+- Complex mocking
+- Non-business validations
+
+Classify each validation as:
+1. Correct for Journey Test
+2. Should move to Integration Tests
+
+Generate output in this format:
+
+1. Critical Journeys Covered
+
+2. Journey Test Coverage Table
+
+| Journey | APIs Used | Purpose | Lightweight? | Issues |
+|----------|-----------|----------|---------------|--------|
+
+3. Overloaded Journey Tests
+
+4. Validations That Should Move To Integration Tests
+
+5. Journey Test Anti-Patterns
+
+6. Recommendations To Keep Journey Tests Lightweight
+
+7. Recommended Journey Test Principles
+
+8. Final Verdict
+- Are journey tests too heavy?
+- What makes them flaky?
+- What should remain in journey layer only?
+
+Be extremely critical and think like a fintech/Open Banking QA architect.
+
