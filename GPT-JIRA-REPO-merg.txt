@@ -1,0 +1,216 @@
+//
+Story currently validates create/update/delete flows only.
+No rollback/recovery mechanism identified for partial deployment or sync failure.
+Additional validation recommended around config propagation, existing third-party regression impact, vault integration, deployment script dependency, and environment synchronization behaviour.
+Operational recovery expectations are currently undefined in story scope.
+
+Best Practical Approach
+
+Do NOT scan entire repo at once initially.
+
+Better approach:
+
+Step 1
+
+Ask:
+
+Explain repository structure and deployment flow.
+Step 2
+
+Analyze scripts individually.
+
+Step 3
+
+Analyze configs.
+
+Step 4
+
+Analyze onboarding flow.
+
+Step 5
+
+Ask for:
+
+List operational risks and missing recovery mechanisms.
+
+Prompt for Missing Story Coverage
+Based on this repository structure and deployment flow, identify gaps in the current user story testing scope.
+
+Current story covers:
+- create third party
+- update permissions
+- delete third party
+
+Identify:
+- operational gaps
+- deployment validation gaps
+- recovery/rollback gaps
+- configuration validation gaps
+- integration validation gaps
+- negative scenarios
+- production support risks
+- monitoring/logging gaps
+- environment synchronization risks
+
+Provide missing scenarios QA should add to Jira comments.
+
+
+///----------///---------//
+1. MASTER PROMPT (Best One)
+
+Use this first at repo root.
+
+Analyze this repository merge/consolidation from a QA and operational risk perspective.
+
+Focus on:
+- deployment risks
+- configuration risks
+- environment-specific issues
+- rollback gaps
+- shell script dependency issues
+- onboarding lifecycle risks
+- secrets/vault risks
+- synchronization risks
+- backward compatibility risks
+- partial deployment failure scenarios
+- impact on existing third-party applications
+
+Check:
+- scripts
+- deployment flow
+- config propagation
+- environment overrides
+- rehearsal vs production differences
+- centralized config management
+- sync scripts
+- vault integration
+- onboarding/update/delete flows
+
+Identify:
+1. Potential production risks
+2. Missing validations
+3. Missing rollback/recovery mechanisms
+4. Hidden dependencies between scripts/configs
+5. Single points of failure
+6. Unsafe assumptions
+7. Areas with poor error handling
+8. Risks due to repo consolidation
+9. Existing third-party impact risks
+10. Suggested QA validation scenarios
+
+Provide findings in:
+- Risk
+- Why it is risky
+- Suggested validation/testing
+- Severity
+2. Prompt for Shell Scripts
+
+Very important for your repo.
+
+Run this on:
+
+build.sh
+rehearsal.sh
+sync-applications.sh
+union.sh
+manual-deploy.sh
+
+Prompt:
+
+Analyze this deployment shell script for operational and deployment risks.
+
+Focus on:
+- missing error handling
+- unsafe assumptions
+- missing rollback
+- hardcoded paths
+- hardcoded environment references
+- dependency on execution order
+- partial deployment risks
+- retry/idempotency issues
+- failure recovery gaps
+- logging gaps
+- secrets exposure risks
+- config overwrite risks
+
+Identify what could fail in production and what QA should validate.
+3. Prompt for Config Risk Analysis
+
+Use on:
+
+YAMLs
+accelerator-config JSONs
+rehearsal/prod config
+Analyze these configuration files for deployment and operational risks.
+
+Check for:
+- environment mismatch risks
+- production/rehearsal inconsistency
+- duplicate configs
+- missing required values
+- unsafe defaults
+- incorrect override hierarchy
+- secrets handling issues
+- backward compatibility risks
+- stale configuration risks
+- centralization risks after repo merge
+
+Suggest what QA should validate after deployment.
+4. Prompt for Rollback Gap Detection
+
+This is VERY important for your Jira comments.
+
+Analyze this repository and deployment flow to determine rollback and recovery capability.
+
+Identify:
+- whether rollback mechanism exists
+- whether deployments are reversible
+- risks if deployment partially fails
+- config corruption risks
+- orphaned third-party onboarding risks
+- cleanup gaps after failed deployment
+- manual recovery dependencies
+- environment recovery risks
+
+Suggest operational recovery test scenarios QA should raise.
+5. Prompt for Existing Third-Party Impact
+
+Very useful.
+
+Analyze how repository consolidation could impact already onboarded third-party applications.
+
+Focus on:
+- existing config compatibility
+- permission propagation
+- deployment sync risks
+- config overwrite risks
+- backward compatibility
+- runtime dependency changes
+- existing onboarding stability
+
+Suggest regression smoke scenarios for existing third parties.
+6. Prompt for Missing Story Coverage
+
+This will help you directly write Jira comments.
+
+Based on this repository structure and deployment flow, identify gaps in the current user story testing scope.
+
+Current story covers:
+- create third party
+- update permissions
+- delete third party
+
+Identify:
+- operational gaps
+- deployment validation gaps
+- recovery/rollback gaps
+- configuration validation gaps
+- integration validation gaps
+- negative scenarios
+- production support risks
+- monitoring/logging gaps
+- environment synchronization risks
+
+Provide missing scenarios QA should add to Jira comments.
+
+
