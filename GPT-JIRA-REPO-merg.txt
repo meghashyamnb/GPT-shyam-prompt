@@ -215,37 +215,35 @@ Provide missing scenarios QA should add to Jira comments.
 
 
 ////======================///
-QA review observations for repository consolidation and centralized deployment/configuration flow:
+Act as an enterprise architect reviewing a banking/open-banking centralized onboarding and deployment platform.
 
-Current story scope primarily validates create/update/delete onboarding scenarios only. Based on repository structure, deployment scripts, sync flow, and centralized configuration handling, additional operational and integration validations are recommended to reduce deployment and recovery risks.
+This repository consolidates onboarding, configuration management, synchronization, deployment orchestration, and Vault integration for multiple third-party providers (TPPs).
 
-Recommended additional validations:
+Review the architecture for:
+- operational resiliency
+- deployment safety
+- centralized failure risks
+- environment isolation
+- rollback/recovery capability
+- synchronization correctness
+- production-readiness
+- observability
+- auditability
+- scalability
+- regulatory/operational risk
 
-- Idempotency validation: rerunning sync with unchanged configuration should result in zero changes.
-- Delete safety validation: non-empty delete diff should require explicit approval and alerting.
-- Partial failure and recovery validation: fail mid-sync, rerun process, and verify expected state convergence.
-- Environment isolation validation: rehearsal environment changes should not impact production state/configuration.
-- Vault negative-path validation:
-  - expired token
-  - missing secret
-  - invalid namespace
-  - Vault unavailable scenarios
-- OBA API failure-path validation:
-  - POST/PUT/DELETE 4xx handling
-  - POST/PUT/DELETE 5xx handling
-  - prevention of silent partial success scenarios
-- Configuration integrity validation:
-  - duplicate client_id
-  - duplicate enabled TPP entries
-  - invalid callback/key/status field handling
-- Regression validation for existing onboarded TPPs to verify:
-  - existing scopes/permissions remain unaffected
-  - critical API journeys continue functioning post-sync
-- Drift detection validation between rehearsal and production environments with approved-difference allowlist handling.
-- Logging/observability validation:
-  - sync summary artifact generation
-  - per-application failure diagnostics
-  - deployment/sync traceability
+Identify:
+- hidden architectural risks
+- unsafe assumptions
+- missing operational controls
+- blast radius concerns
+- recovery limitations
+- configuration integrity risks
+- security concerns
+- production support challenges
 
-Additionally, rollback/recovery behaviour for partial deployment or sync failure scenarios is currently not defined in the story scope and may require clarification.
+Also identify:
+- what QA should validate
+- what DevOps should validate
+- what should be documented operationally
 
