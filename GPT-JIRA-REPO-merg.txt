@@ -1,249 +1,189 @@
-//
-Story currently validates create/update/delete flows only.
-No rollback/recovery mechanism identified for partial deployment or sync failure.
-Additional validation recommended around config propagation, existing third-party regression impact, vault integration, deployment script dependency, and environment synchronization behaviour.
-Operational recovery expectations are currently undefined in story scope.
+Act as a Senior QA Architect and Playwright Migration Specialist.
 
-Best Practical Approach
+Context:
+- Organization is already migrating automation from Jest to Playwright for all services.
+- This specific task is NOT a full framework migration.
+- There is one existing Postman collection currently executed manually.
+- Goal is to analyze the Postman collection, understand the business/journey flow, compare with existing journey automation if available, and create a Jira-ready user story for migrating this manual Postman flow into Playwright automation.
 
-Do NOT scan entire repo at once initially.
+Repository Context:
+- Postman collection and existing journey tests are in the same repository.
+- Existing Playwright migration work is already happening for other services.
+- Need to identify reusable utilities/components already available in the Playwright framework.
+- Focus should be on automation coverage, journey flow understanding, implementation effort, and realistic sprint planning.
 
-Better approach:
+==================================================
+TASK 1 — ANALYZE THE POSTMAN COLLECTION
+==================================================
 
-Step 1
+Analyze the Postman collection and identify:
 
-Ask:
+- Business flow/journey covered
+- API sequence and dependency flow
+- Authentication flow
+- Dynamic variables/environment variables
+- Chained requests
+- Correlation IDs
+- Idempotency usage
+- Pre-request scripts
+- Existing assertions/test scripts
+- Negative scenarios
+- Data dependencies
+- Hardcoded values
+- Manual execution pain points
+- Existing validations
+- Missing validations
 
-Explain repository structure and deployment flow.
-Step 2
+Provide:
+1. High-level business flow summary
+2. API inventory
+3. Request dependency flow
+4. Risk areas
+5. Weak or missing validations
+6. APIs suitable for automation
+7. APIs that may require mocking/stubbing
 
-Analyze scripts individually.
+==================================================
+TASK 2 — ANALYZE EXISTING PLAYWRIGHT/JOURNEY FRAMEWORK
+==================================================
 
-Step 3
+Analyze the repository and identify reusable Playwright components already available:
 
-Analyze configs.
-
-Step 4
-
-Analyze onboarding flow.
-
-Step 5
-
-Ask for:
-
-List operational risks and missing recovery mechanisms.
-
-Prompt for Missing Story Coverage
-Based on this repository structure and deployment flow, identify gaps in the current user story testing scope.
-
-Current story covers:
-- create third party
-- update permissions
-- delete third party
-
-Identify:
-- operational gaps
-- deployment validation gaps
-- recovery/rollback gaps
-- configuration validation gaps
-- integration validation gaps
-- negative scenarios
-- production support risks
-- monitoring/logging gaps
-- environment synchronization risks
-
-Provide missing scenarios QA should add to Jira comments.
-
-
-///----------///---------//
-1. MASTER PROMPT (Best One)
-
-Use this first at repo root.
-
-Analyze this repository merge/consolidation from a QA and operational risk perspective.
-
-Focus on:
-- deployment risks
-- configuration risks
-- environment-specific issues
-- rollback gaps
-- shell script dependency issues
-- onboarding lifecycle risks
-- secrets/vault risks
-- synchronization risks
-- backward compatibility risks
-- partial deployment failure scenarios
-- impact on existing third-party applications
-
-Check:
-- scripts
-- deployment flow
-- config propagation
-- environment overrides
-- rehearsal vs production differences
-- centralized config management
-- sync scripts
-- vault integration
-- onboarding/update/delete flows
+- Existing API clients
+- Authentication utilities
+- Fixtures
+- Logging utilities
+- Reporting setup
+- Environment configuration
+- Request wrappers
+- Assertion helpers
+- Retry handling
+- Schema validation utilities
+- Correlation ID handling
+- CI/CD integration
 
 Identify:
-1. Potential production risks
-2. Missing validations
-3. Missing rollback/recovery mechanisms
-4. Hidden dependencies between scripts/configs
-5. Single points of failure
-6. Unsafe assumptions
-7. Areas with poor error handling
-8. Risks due to repo consolidation
-9. Existing third-party impact risks
-10. Suggested QA validation scenarios
+- What can be reused directly
+- What requires small enhancement
+- What new utilities are needed
+- Existing coding conventions to follow
 
-Provide findings in:
-- Risk
-- Why it is risky
-- Suggested validation/testing
-- Severity
-2. Prompt for Shell Scripts
+==================================================
+TASK 3 — COVERAGE & GAP ANALYSIS
+==================================================
 
-Very important for your repo.
-
-Run this on:
-
-build.sh
-rehearsal.sh
-sync-applications.sh
-union.sh
-manual-deploy.sh
-
-Prompt:
-
-Analyze this deployment shell script for operational and deployment risks.
-
-Focus on:
-- missing error handling
-- unsafe assumptions
-- missing rollback
-- hardcoded paths
-- hardcoded environment references
-- dependency on execution order
-- partial deployment risks
-- retry/idempotency issues
-- failure recovery gaps
-- logging gaps
-- secrets exposure risks
-- config overwrite risks
-
-Identify what could fail in production and what QA should validate.
-3. Prompt for Config Risk Analysis
-
-Use on:
-
-YAMLs
-accelerator-config JSONs
-rehearsal/prod config
-Analyze these configuration files for deployment and operational risks.
-
-Check for:
-- environment mismatch risks
-- production/rehearsal inconsistency
-- duplicate configs
-- missing required values
-- unsafe defaults
-- incorrect override hierarchy
-- secrets handling issues
-- backward compatibility risks
-- stale configuration risks
-- centralization risks after repo merge
-
-Suggest what QA should validate after deployment.
-4. Prompt for Rollback Gap Detection
-
-This is VERY important for your Jira comments.
-
-Analyze this repository and deployment flow to determine rollback and recovery capability.
+Compare:
+- Manual Postman flow
+VS
+- Existing automated journey coverage (if available)
 
 Identify:
-- whether rollback mechanism exists
-- whether deployments are reversible
-- risks if deployment partially fails
-- config corruption risks
-- orphaned third-party onboarding risks
-- cleanup gaps after failed deployment
-- manual recovery dependencies
-- environment recovery risks
+- Already automated APIs
+- Missing automation coverage
+- Missing assertions
+- Missing negative testing
+- Missing schema validation
+- Duplicate coverage risks
 
-Suggest operational recovery test scenarios QA should raise.
-5. Prompt for Existing Third-Party Impact
+Create a summary table:
+- API Name
+- Covered Already
+- Needs Automation
+- Reusable Logic Available
+- Complexity
+- Recommended Action
 
-Very useful.
+==================================================
+TASK 4 — IMPLEMENTATION & EFFORT ESTIMATION
+==================================================
 
-Analyze how repository consolidation could impact already onboarded third-party applications.
+Estimate effort for automating this Postman collection in Playwright.
 
-Focus on:
-- existing config compatibility
-- permission propagation
-- deployment sync risks
-- config overwrite risks
-- backward compatibility
-- runtime dependency changes
-- existing onboarding stability
+Break down effort into:
+- Flow understanding
+- Utility reuse
+- New utility creation
+- API implementation
+- Assertions
+- Test data setup
+- Reporting integration
+- CI/CD execution
+- Stabilization
+- Code review/rework
 
-Suggest regression smoke scenarios for existing third parties.
-6. Prompt for Missing Story Coverage
+Classify:
+- Low complexity areas
+- Medium complexity areas
+- High complexity areas
 
-This will help you directly write Jira comments.
+Provide:
+- Story points
+- Estimated engineering days
+- Conservative estimate
+- Risks/dependencies
+- Unknowns needing clarification
 
-Based on this repository structure and deployment flow, identify gaps in the current user story testing scope.
+==================================================
+TASK 5 — SPRINT PLANNING
+==================================================
 
-Current story covers:
-- create third party
-- update permissions
-- delete third party
+Create realistic implementation plans for:
+- 2 sprint option
+- 3 sprint option
+- 4 sprint option
 
-Identify:
-- operational gaps
-- deployment validation gaps
-- recovery/rollback gaps
-- configuration validation gaps
-- integration validation gaps
-- negative scenarios
-- production support risks
-- monitoring/logging gaps
-- environment synchronization risks
-
-Provide missing scenarios QA should add to Jira comments.
-
-
-////======================///
-Act as an enterprise architect reviewing a banking/open-banking centralized onboarding and deployment platform.
-
-This repository consolidates onboarding, configuration management, synchronization, deployment orchestration, and Vault integration for multiple third-party providers (TPPs).
-
-Review the architecture for:
-- operational resiliency
-- deployment safety
-- centralized failure risks
-- environment isolation
-- rollback/recovery capability
-- synchronization correctness
-- production-readiness
-- observability
-- auditability
-- scalability
-- regulatory/operational risk
-
-Identify:
-- hidden architectural risks
-- unsafe assumptions
-- missing operational controls
-- blast radius concerns
-- recovery limitations
-- configuration integrity risks
-- security concerns
-- production support challenges
+For each option provide:
+- Scope covered
+- Risks
+- Stabilization activities
+- Recommended sprint breakdown
+- MVP recommendation
 
 Also identify:
-- what QA should validate
-- what DevOps should validate
-- what should be documented operationally
+- Recommended option
+- Fastest option
+- Safest option
 
+==================================================
+TASK 6 — CREATE JIRA USER STORY
+==================================================
+
+Generate Jira-ready content for:
+
+1. User Story
+2. Technical Story
+3. Subtasks
+4. Acceptance Criteria
+5. Definition of Done
+6. Risks
+7. Assumptions
+8. Dependencies
+9. Out of Scope
+10. Test Strategy
+
+Acceptance criteria should include:
+- Postman flow automated in Playwright
+- Existing reusable utilities leveraged
+- CI/CD executable
+- Reporting integrated
+- Stable execution
+- Correlation ID logging
+- Proper assertion coverage
+- No duplicate journey coverage
+
+==================================================
+TASK 7 — FINAL RECOMMENDATION
+==================================================
+
+Provide:
+1. Executive Summary
+2. Technical Recommendation
+3. Suggested rollout approach
+4. Recommended implementation order
+5. Suggested quick wins
+6. Suggested reusable framework components
+7. Suggested areas to avoid over-engineering
+
+Finally provide:
+- Final recommendation whether this work realistically fits into 2, 3, or 4 sprints
+- Repo-backed justification for the estimate
