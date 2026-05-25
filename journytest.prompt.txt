@@ -1,0 +1,197 @@
+Act as a Senior QA Architect and Staff Test Automation Engineer.
+
+I need you to analyze this repository and help me create a production-grade user story for converting an existing Postman collection into Playwright-based journey/API tests.
+
+Context:
+- This repo contains:
+  1. Existing Postman collections
+  2. Existing journey/end-to-end tests
+  3. Existing automation framework and utilities
+  4. API helper methods/utilities
+- Goal:
+  Convert or migrate the Postman collection flows into maintainable Playwright-based journey/API automation tests.
+
+Tasks:
+
+STEP 1 — Repository Discovery
+Analyze and summarize:
+- Framework architecture
+- Folder structure
+- Existing journey test approach
+- Existing Playwright setup
+- Existing API utilities/helpers
+- Authentication/token handling
+- Test data management
+- Environment configuration
+- Reporting setup
+- CI/CD integration
+- Reusable wrappers/utilities
+- Current coding patterns and conventions
+
+Provide:
+- High-level architecture summary
+- Dependency map
+- Reusable components list
+- Technical risks
+- Technical debt observed
+
+---------------------------------------------------
+
+STEP 2 — Postman Collection Analysis
+Analyze all Postman collections and identify:
+- Total APIs covered
+- Request types
+- Authentication flows
+- Shared variables/environment usage
+- Chained requests
+- Dynamic data handling
+- Pre-request scripts
+- Test scripts/assertions
+- Data dependencies
+- Correlation IDs/idempotency usage
+- Negative scenarios
+- Retry or polling logic
+
+Provide:
+- API inventory table
+- Flow dependency diagram
+- APIs grouped by business journey
+- Missing assertions
+- Weak validations
+- Duplicate requests
+- Hardcoded values
+- Potential flaky areas
+
+---------------------------------------------------
+
+STEP 3 — Existing Journey Coverage Analysis
+Analyze existing journey/E2E tests and compare them with the Postman collection.
+
+Identify:
+- Which flows are already covered
+- Partial coverage
+- Missing coverage
+- Duplicate validations
+- Gaps in integration coverage
+- Gaps in negative testing
+- Missing schema validation
+- Missing business validation
+- Missing resiliency validation
+- Existing reusable components that can be leveraged
+
+Create:
+1. Coverage Matrix
+   Columns:
+   - API Name
+   - Postman Covered
+   - Journey Covered
+   - Partial/Full
+   - Missing Assertions
+   - Reusable Existing Logic
+   - Recommended Action
+
+2. Gap Analysis Summary
+
+3. Reusability Recommendations
+
+---------------------------------------------------
+
+STEP 4 — Playwright Migration Design
+Recommend best architecture for implementing these flows in Playwright.
+
+Suggest:
+- Folder structure
+- API client pattern
+- Fixtures strategy
+- Test data strategy
+- Environment strategy
+- Authentication strategy
+- Reporting
+- Logging
+- Correlation ID handling
+- Retry handling
+- Parallel execution support
+- Utility abstraction
+- Schema validation approach
+- Mocking strategy if needed
+- CI/CD execution strategy
+
+Also identify:
+- What should NOT be migrated from Postman
+- What should remain lightweight
+- What should stay in integration tests vs journey tests
+
+---------------------------------------------------
+
+STEP 5 — Effort Estimation
+Provide:
+- Complexity analysis
+- Risks impacting estimation
+- Dependencies/blockers
+- Areas requiring clarification
+
+Estimate effort in:
+- Story points
+- Ideal engineering days
+- Conservative engineering days
+
+Break estimation into:
+- Framework setup
+- Refactoring
+- Utility creation
+- API migration
+- Assertion implementation
+- Test data setup
+- CI/CD updates
+- Documentation
+- Stabilization/flakiness fixes
+- Code review/rework
+
+Also classify:
+- Low complexity APIs
+- Medium complexity APIs
+- High complexity APIs
+
+---------------------------------------------------
+
+STEP 6 — User Story Creation
+Generate:
+1. Epic
+2. User Story
+3. Technical Story
+4. Subtasks
+5. Acceptance Criteria
+6. Definition of Done
+7. Risks
+8. Assumptions
+9. Out of Scope
+10. Test Strategy
+
+Story should be suitable for Jira.
+
+Include:
+- Business value
+- Technical value
+- Shift-left benefits
+- Maintainability benefits
+- Reduction of duplicated coverage
+- Faster regression execution benefits
+
+---------------------------------------------------
+
+STEP 7 — Final Recommendation
+Provide:
+- Whether migration is worth doing
+- Recommended phased rollout plan
+- Suggested MVP scope
+- Suggested priority APIs
+- Suggested APIs to defer
+- Quick wins
+- Long-term architecture recommendations
+
+Finally provide:
+1. Executive Summary
+2. Technical Recommendation
+3. Sprint Recommendation
+4. Suggested Team Allocation
+5. Suggested rollout across sprints
