@@ -1,0 +1,67 @@
+Act as a senior SDET/Platform QA engineer.
+
+I need to validate replay/idempotency behaviour for a centralized onboarding and deployment pipeline that:
+- reads repository-based configuration
+- performs sync/deployment orchestration
+- updates MongoDB state
+- manages third-party onboarding/application lifecycle
+
+The system supports:
+- create application
+- update application
+- delete application
+- list/get application
+
+Generate detailed replay/idempotency validation scenarios focusing on:
+
+1. Pipeline Replay Safety
+- rerunning same pipeline with unchanged config
+- rerunning failed pipeline
+- replay after partial deployment failure
+- replay after MongoDB partial update
+- replay after timeout/interruption
+
+2. MongoDB Idempotency
+- duplicate document prevention
+- repeated create/update/delete behaviour
+- stale/orphan document handling
+- upsert consistency
+- concurrent replay handling
+
+3. Onboarding Idempotency
+- duplicate onboarding prevention
+- repeated onboarding request handling
+- repeated delete handling
+- replay after partial onboarding failure
+- config vs MongoDB consistency after replay
+
+4. Deployment/Sync Validation
+- unchanged config should not trigger unnecessary updates
+- deployment state convergence after replay
+- reconciliation behaviour
+- drift detection after replay
+- environment isolation during replay
+
+5. Failure & Recovery Scenarios
+- Vault unavailable during replay
+- API 4xx/5xx during replay
+- network interruption during sync
+- replay after manual rollback/recovery
+- partial sync recovery validation
+
+For each scenario provide:
+- Scenario Name
+- Preconditions
+- Steps
+- Expected Behaviour
+- MongoDB Validation
+- Deployment Validation
+- Risks if failed
+- Priority (P0/P1/P2)
+
+Also identify:
+- hidden replay risks
+- non-idempotent behaviours
+- operational recovery gaps
+- architectural weaknesses in replay handling
+- observability/logging validations required
