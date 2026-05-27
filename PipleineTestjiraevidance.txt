@@ -1,6 +1,6 @@
 QA observations/suggested additional validations are mainly based on architecture and operational-flow reasoning considering the current repository consolidation activity, centralized synchronization flow, deployment orchestration changes, and MongoDB runtime state updates involved in onboarding/configuration management.
 
-Since most of the implementation changes are currently configuration-driven and internally orchestrated through deployment/sync flow rather than exposed through directly testable service-level contracts, QA validation is primarily operational-confidence based instead of traditional functional regression validation.
+Since most of the implementation changes are currently configuration-driven and internally orchestrated through deployment/sync flow, QA validation is primarily operational-confidence based instead of traditional functional regression validation.
 
 The intention behind the recommended validations is mainly to improve confidence around the following operational scenarios and potential impacts:
 
