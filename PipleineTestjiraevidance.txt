@@ -1,0 +1,23 @@
+QA observations/suggested additional validations are mainly based on architecture and operational-flow reasoning considering the current repository consolidation activity, centralized synchronization flow, deployment orchestration changes, and MongoDB runtime state updates involved in onboarding/configuration management.
+
+Since most of the implementation changes are currently configuration-driven and internally orchestrated through deployment/sync flow rather than exposed through directly testable service-level contracts, QA validation is primarily operational-confidence based instead of traditional functional regression validation.
+
+The intention behind the recommended validations is mainly to improve confidence around the following operational scenarios and potential impacts:
+
+* Pipeline replay/rerun scenarios where unchanged configuration may unintentionally create duplicate onboarding, duplicate MongoDB updates, or inconsistent runtime state if idempotency/replay behaviour is not validated.
+
+* Partial sync/deployment interruption scenarios where MongoDB state, deployment state, and configuration state may become partially applied or inconsistent if replay/recovery behaviour is not clearly validated.
+
+* Centralized repository and shared deployment/synchronization flow changes where existing onboarded TPPs may unintentionally be impacted due to shared orchestration/configuration dependencies after consolidation.
+
+* Environment isolation scenarios where rehearsal configuration/state changes could unintentionally impact production configuration/runtime state if environment boundaries are not validated properly.
+
+* Downstream OBA API failure scenarios (POST/PUT/DELETE 4xx/5xx responses) where partial-success behaviour may leave stale/incomplete onboarding state if failure handling and rollback/recovery expectations are not observable.
+
+* Configuration integrity scenarios involving duplicate client_id, duplicate enabled TPP entries, invalid callback/key/status values, or malformed configuration payloads that may create inconsistent onboarding/runtime state.
+
+* Limited deployment observability/logging scenarios where replay/deployment/sync failures may become difficult to troubleshoot operationally without sufficient diagnostics, sync summary visibility, or deployment traceability.
+
+* Drift/state consistency scenarios where repository configuration, MongoDB runtime state, and deployed runtime behaviour may diverge over time if reconciliation/replay validation is not understood clearly.
+
+These observations are mainly intended to improve operational resiliency, deployment confidence, replay/recovery understanding, and state-consistency validation during stabilization phase rather than indicating direct functional implementation concerns.
