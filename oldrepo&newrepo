@@ -1,0 +1,176 @@
+Step 1: Understand Old Repo
+
+Run this on the OLD repository first.
+
+Act as a Principal Architect and Senior QA.
+
+Analyze this repository and create a complete inventory of everything it contains.
+
+Identify:
+
+1. Business functionality
+- onboarding flows
+- synchronization flows
+- deployment flows
+- configuration management
+
+2. Technical components
+- APIs
+- services
+- repositories
+- MongoDB interactions
+- scripts
+- pipelines
+- ConfigMaps
+- OpenShift/Kubernetes manifests
+
+3. Deployment architecture
+- Jenkins pipelines
+- build scripts
+- promotion flow
+- approval gates
+- environment flow
+
+4. Runtime dependencies
+- Vault
+- MongoDB
+- OBA APIs
+- third-party integrations
+
+5. Create a migration inventory table
+
+| Component | Location | Purpose | Criticality |
+|------------|-----------|-----------|-----------|
+
+Provide exact files and folders as evidence.
+
+Save the output.
+
+Step 2: Understand New Repo
+
+Run this on the NEW repository.
+
+Act as a Principal Architect and Senior QA.
+
+Analyze this repository and create a complete inventory of everything it contains.
+
+Identify:
+
+1. Business functionality
+2. Technical components
+3. Deployment architecture
+4. Runtime dependencies
+5. MongoDB interactions
+6. OBA interactions
+7. Deployment scripts
+8. Configurations
+
+Create a component inventory table.
+
+Provide exact file names and folders as evidence.
+
+Save the output.
+
+Step 3: Compare Old vs New
+
+This is the MOST IMPORTANT prompt.
+
+Act as a Principal Architect performing a migration review.
+
+I have two inventories:
+
+OLD REPOSITORY INVENTORY
+<Paste old inventory>
+
+NEW REPOSITORY INVENTORY
+<Paste new inventory>
+
+Compare the repositories and identify:
+
+1. Fully migrated components
+2. Partially migrated components
+3. Missing components
+4. Obsolete components
+5. New components introduced
+
+Create this table:
+
+| Component | Old Repo | New Repo | Fully Migrated | Partial | Missing | Risk |
+
+For every missing component:
+- provide evidence
+- provide impact
+- provide operational risk
+
+Do not assume migration is complete.
+Only use evidence from inventories.
+Step 4: Gap Analysis
+
+Once you find missing items:
+
+Act as a Staff Engineer and QA Lead.
+
+Based on the migration comparison below:
+
+<Paste comparison>
+
+Identify:
+
+1. Critical migration gaps
+2. Medium-risk migration gaps
+3. Low-risk migration gaps
+
+For each gap provide:
+- impact
+- operational risk
+- deployment risk
+- testing impact
+- recommendation
+
+Classify each finding as:
+- Confirmed Gap
+- Potential Risk
+- Future Enhancement
+- No Action Needed
+
+Create Jira-ready comments.
+Special Prompt for Your Current Story
+
+Since your concern is around:
+
+config-maps
+third-party-applications
+deployment scripts
+pipeline migration
+
+Use this targeted prompt:
+
+Compare OLD repo and NEW repo specifically for:
+
+- config-maps
+- third-party-applications
+- Jenkins pipelines
+- deployment scripts
+- rehearsal flow
+- production flow
+- environment promotion
+- approval gates
+- rollback mechanisms
+- MongoDB update flow
+- Vault integration
+
+Identify:
+
+1. Files present in old repo but missing in new repo
+2. Scripts present in old repo but missing in new repo
+3. Pipeline stages removed during migration
+4. ConfigMaps not migrated
+5. Environment-specific configurations not migrated
+6. Deployment validation gaps
+7. Operational risks introduced
+
+Provide exact file names and evidence.
+
+Create:
+
+| Artifact | Old Repo | New Repo | Status | Impact |
