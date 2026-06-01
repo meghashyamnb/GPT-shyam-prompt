@@ -1,74 +1,78 @@
-Title: Improve Third-Party Configuration Validation by Replacing Jest-Based Validation with Integration and Database Verification Tests
+Title
+
+Implement MongoDB Verification Tests for Third-Party Synchronization Flow (Local)
 
 Background
 
-Current validation within the Third-Party onboarding/configuration flow primarily relies on Jest tests. However, the existing Jest coverage does not provide sufficient confidence that configuration changes have been successfully synchronized, persisted, and deployed across environments.
+Current Journey Tests do not validate whether Third-Party configuration changes are persisted correctly in MongoDB after synchronization. As a result, successful test execution does not guarantee that the expected runtime state has been created, updated, or removed.
 
-As part of repository consolidation and centralized deployment flow, there is a need to strengthen validation by introducing integration-level verification and database state validation to ensure that configuration changes are correctly reflected in runtime systems.
+This story introduces database-level validation to verify synchronization outcomes directly.
 
 Objective
 
-Improve deployment confidence and operational validation by replacing/reducing reliance on current Jest validation and introducing integration and database verification tests within the deployment pipeline.
+Implement Playwright-based integration tests that validate MongoDB state after Third-Party synchronization.
 
 Scope
 
-* Review existing Jest validation coverage and identify gaps.
-* Assess whether existing integration tests can be leveraged or extended.
-* Introduce integration-level validation for third-party onboarding/configuration flows.
-* Introduce MongoDB/database validation to verify persisted state after deployment/synchronization.
-* Review current Drivetrain pipeline stages and identify the appropriate stage for integration/database validation execution.
-* Validate promotion flow across Union, Rehearsal, and Production environments.
-* Document deployment validation strategy and approval checkpoints.
+In Scope
 
-Acceptance Criteria
-
-1. Existing Jest validation coverage is reviewed and documented.
-2. Integration test coverage is identified and enhanced where required.
-3. Integration tests validate critical third-party onboarding/configuration flows.
-4. Database validation tests verify that:
-
-   * Created configurations are persisted correctly.
-   * Updated configurations are reflected correctly.
-   * Deleted configurations are removed or marked appropriately.
-   * Runtime state matches expected configuration state.
-5. Validation is executable in Union environment.
-6. Validation approach is defined for Rehearsal environment.
-7. Current Drivetrain pipeline flow is reviewed and recommended integration points are documented.
-8. Pipeline execution includes integration/database verification before promotion.
-9. Test evidence and execution results are available through pipeline reporting.
-10. Documentation is updated to describe the new validation approach.
+* Playwright test implementation
+* MongoDB state verification
+* Local environment execution
+* Test data setup and cleanup
 
 Out of Scope
 
-* Functional redesign of onboarding services.
-* Production data migration changes.
-* Changes to business onboarding logic.
+* Union environment implementation
+* Rehearsal environment implementation
+* Pipeline/Drivetrain changes
+* Journey Test removal/migration
+* Changes to sync business logic
+* Changes to OBA configuration structure
+
+Acceptance Criteria
+
+AC1 – Create Validation
+
+Given a new TPP is added to configuration
+
+When synchronization executes
+
+Then a MongoDB record is created with the expected:
+
+* TPP ID
+* Client ID
+* Status
+* Permissions/Scopes
+
+AC2 – Update Validation
+
+Given an existing TPP exists in MongoDB
+
+When permissions/scopes are updated in configuration and synchronization executes
+
+Then MongoDB reflects the updated values
+
+AC3 – Delete Validation
+
+Given an existing TPP exists in MongoDB
+
+When the TPP is removed from configuration and synchronization executes
+
+Then the corresponding MongoDB record is removed (or marked inactive as per current implementation)
+
+AC4 – Idempotency Validation
+
+Given no configuration changes
+
+When synchronization executes multiple times
+
+Then no duplicate MongoDB records are created
 
 Definition of Done
 
-* Integration tests implemented and executed successfully.
-* Database verification tests implemented and executed successfully.
-* Pipeline integration completed.
-* Documentation updated.
-* QA and Engineering review completed.
-* Validation evidence available in pipeline execution results.
-
-Deliverables
-
-* Integration test suite.
-* Database verification test suite.
-* Drivetrain pipeline update recommendation.
-* Validation execution documentation.
-* Test evidence/reporting.
-
-
-Background
-
-Current validation for Third-Party onboarding/configuration includes Journey Test execution as part of the Drivetrain pipeline. However, analysis of the existing Journey Tests shows that they do not validate the Third-Party configuration synchronization flow, MongoDB persistence, or runtime state changes associated with this process.
-
-The current Journey Tests primarily execute happy-path validation and provide pipeline execution coverage but do not verify whether configuration changes have been successfully synchronized, persisted, and reflected in the target runtime state.
-
-As a result, the existing Journey Tests provide limited confidence for this specific onboarding/configuration flow.
-
-To improve deployment confidence and validation effectiveness, Journey Test validation will be replaced with integration-level verification and MongoDB database validation. The new approach will verify that configuration changes are correctly synchronized and persisted, providing direct validation of the expected runtime state rather than relying on generic pipeline execution checks.
-
+* Playwright tests implemented
+* MongoDB assertions implemented
+* Local execution successful
+* Test data cleanup implemented
+* Test evidence attached to Jira
