@@ -60,3 +60,15 @@ Deliverables
 * Drivetrain pipeline update recommendation.
 * Validation execution documentation.
 * Test evidence/reporting.
+
+
+Background
+
+Current validation for Third-Party onboarding/configuration includes Journey Test execution as part of the Drivetrain pipeline. However, analysis of the existing Journey Tests shows that they do not validate the Third-Party configuration synchronization flow, MongoDB persistence, or runtime state changes associated with this process.
+
+The current Journey Tests primarily execute happy-path validation and provide pipeline execution coverage but do not verify whether configuration changes have been successfully synchronized, persisted, and reflected in the target runtime state.
+
+As a result, the existing Journey Tests provide limited confidence for this specific onboarding/configuration flow.
+
+To improve deployment confidence and validation effectiveness, Journey Test validation will be replaced with integration-level verification and MongoDB database validation. The new approach will verify that configuration changes are correctly synchronized and persisted, providing direct validation of the expected runtime state rather than relying on generic pipeline execution checks.
+
