@@ -4,20 +4,20 @@ Implement MongoDB Verification Tests for Third-Party Synchronization Flow (Local
 
 Background
 
-Current Journey Tests do not validate whether Third-Party configuration changes are persisted correctly in MongoDB after synchronization. As a result, successful test execution does not guarantee that the expected runtime state has been created, updated, or removed.
+Current Journey Tests do not validate whether Third-Party configuration changes are correctly synchronized and persisted in MongoDB. Successful Journey Test execution does not verify runtime state consistency for create, update, or delete operations.
 
-This story introduces database-level validation to verify synchronization outcomes directly.
+This story introduces database-level validation to directly verify synchronization outcomes.
 
 Objective
 
-Implement Playwright-based integration tests that validate MongoDB state after Third-Party synchronization.
+Implement Playwright-based integration tests that validate MongoDB state after Third-Party synchronization execution.
 
 Scope
 
 In Scope
 
 * Playwright test implementation
-* MongoDB state verification
+* MongoDB verification
 * Local environment execution
 * Test data setup and cleanup
 
@@ -26,53 +26,45 @@ Out of Scope
 * Union environment implementation
 * Rehearsal environment implementation
 * Pipeline/Drivetrain changes
-* Journey Test removal/migration
-* Changes to sync business logic
+* Journey Test removal story
+* Changes to synchronization logic
 * Changes to OBA configuration structure
 
 Acceptance Criteria
 
-AC1 – Create Validation
+AC1 - Create Synchronization Validation
 
-Given a new TPP is added to configuration
+* Add a new TPP configuration.
+* Execute synchronization process.
+* Verify MongoDB record is created.
+* Verify TPP ID, Client ID, Status, Permissions/Scopes match configuration values.
 
-When synchronization executes
+AC2 - Update Synchronization Validation
 
-Then a MongoDB record is created with the expected:
+* Modify permissions/scopes for an existing TPP configuration.
+* Execute synchronization process.
+* Verify MongoDB record is updated.
+* Verify updated permissions/scopes match configuration values.
+* Verify unrelated fields remain unchanged.
 
-* TPP ID
-* Client ID
-* Status
-* Permissions/Scopes
+AC3 - Delete Synchronization Validation
 
-AC2 – Update Validation
+* Remove an existing TPP configuration.
+* Execute synchronization process.
+* Verify MongoDB record is removed or marked inactive as per current implementation.
+* Verify no stale TPP data remains.
 
-Given an existing TPP exists in MongoDB
+AC4 - Synchronization Idempotency Validation
 
-When permissions/scopes are updated in configuration and synchronization executes
-
-Then MongoDB reflects the updated values
-
-AC3 – Delete Validation
-
-Given an existing TPP exists in MongoDB
-
-When the TPP is removed from configuration and synchronization executes
-
-Then the corresponding MongoDB record is removed (or marked inactive as per current implementation)
-
-AC4 – Idempotency Validation
-
-Given no configuration changes
-
-When synchronization executes multiple times
-
-Then no duplicate MongoDB records are created
+* Execute synchronization multiple times without configuration changes.
+* Verify no duplicate MongoDB records are created.
+* Verify database state remains unchanged across executions.
 
 Definition of Done
 
-* Playwright tests implemented
-* MongoDB assertions implemented
-* Local execution successful
-* Test data cleanup implemented
-* Test evidence attached to Jira
+* Playwright tests implemented.
+* MongoDB assertions implemented.
+* Local execution successful.
+* Test data cleanup implemented.
+* Test evidence attached to Jira.
+* Documentation updated.
