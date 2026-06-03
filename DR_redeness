@@ -1,0 +1,192 @@
+Act as a Senior QA Engineer and Site Reliability Engineer with expertise in OpenShift, Splunk, OpenSearch, Dynatrace, Disaster Recovery (DR) testing, and Open Banking systems.
+
+I have been assigned to validate Open Banking services during a Disaster Recovery (DR) activity where workloads may be migrated between OpenShift infrastructure/pods/nodes. My responsibility is to perform technical validation, monitoring, evidence collection, and provide a Go/No-Go recommendation.
+
+Generate a detailed DR Validation Test Plan document with the following sections:
+
+1. Objective
+
+   * Purpose of DR activity
+   * Scope of testing
+   * Systems involved
+   * Assumptions and dependencies
+
+2. Environment Information
+
+   * OpenShift Cluster
+   * Namespace(s)
+   * Open Banking services
+   * AAA services
+   * Monitoring tools
+   * Logging tools
+
+3. DR Roles and Responsibilities
+
+   * QA responsibilities
+   * OpenShift team responsibilities
+   * Application team responsibilities
+   * Monitoring team responsibilities
+
+4. Pre-DR Checklist
+
+Include detailed verification steps and evidence collection requirements for:
+
+OpenShift
+
+* Verify cluster access
+* Verify namespace access
+* Capture pod count
+* Capture deployment status
+* Capture statefulsets
+* Capture routes
+* Capture services
+* Capture events
+* Capture node information
+* Capture CPU and memory utilization
+
+Provide OpenShift CLI commands for every check.
+
+Splunk
+
+* Verify access
+* Capture baseline error count
+* Capture warning count
+* Capture exception count
+* Capture log ingestion status
+* Capture baseline search results
+
+OpenSearch
+
+* Verify dashboard availability
+* Verify index availability
+* Capture latest log timestamp
+* Capture sample transactions
+
+Dynatrace
+
+* Verify access
+* Capture synthetic monitor status
+* Capture availability percentage
+* Capture response times
+* Capture screenshots for evidence
+
+5. Baseline Evidence Collection
+
+Create a table containing:
+
+* Check Name
+* Tool
+* Command/Query
+* Expected Result
+* Actual Result
+* Evidence Location
+* Pass/Fail
+
+6. During DR Monitoring Activities
+
+Provide a detailed monitoring plan covering:
+
+OpenShift
+
+* Pod startup monitoring
+* Pod restart monitoring
+* Deployment rollout monitoring
+* Event monitoring
+* Resource monitoring
+* Node migration validation
+
+Splunk
+
+* Error spike monitoring
+* Exception monitoring
+* Timeout monitoring
+* Connection failure monitoring
+
+OpenSearch
+
+* Log ingestion verification
+* Dashboard health verification
+* Transaction trace verification
+
+Dynatrace
+
+* Synthetic monitor execution
+* Failure detection
+* Availability monitoring
+* Response time degradation monitoring
+
+7. Post-DR Validation Checklist
+
+Include detailed verification steps for:
+
+OpenShift
+
+* All expected pods running
+* No CrashLoopBackOff
+* No FailedScheduling events
+* No restart count increase
+* Deployments available
+* Resource utilization within normal limits
+
+Splunk
+
+* No unusual error spikes
+* No missing logs
+* Successful transaction traces
+
+OpenSearch
+
+* New events visible
+* Latest timestamps updated
+* Dashboards operational
+
+Dynatrace
+
+* All synthetic monitors successful
+* No availability degradation
+* No response time anomalies
+
+8. Critical Service Validation
+
+Provide a section where I can list:
+
+* Service Name
+* Namespace
+* Pod Count Before DR
+* Pod Count After DR
+* Deployment Status
+* Validation Status
+
+9. Success Criteria
+
+Create measurable Go/No-Go criteria including:
+
+* 100% critical pods available
+* No critical application errors
+* Synthetic monitoring successful
+* Log ingestion functioning
+* Dashboards operational
+* No unresolved infrastructure issues
+
+10. Risks and Rollback Considerations
+
+Include:
+
+* Common OpenShift DR risks
+* Logging risks
+* Monitoring risks
+* Application risks
+* Rollback triggers
+
+11. Final DR Sign-Off Template
+
+Provide a professional sign-off section including:
+
+* Summary
+* Observations
+* Issues found
+* Recommendation
+* Go/No-Go decision
+* Evidence references
+
+Ensure the document is written in a professional format suitable for ANZ Open Banking DR validation activities and includes practical OpenShift CLI commands, Splunk searches, OpenSearch checks, and Dynatrace validation steps.
