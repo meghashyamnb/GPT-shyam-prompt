@@ -190,3 +190,292 @@ Provide a professional sign-off section including:
 * Evidence references
 
 Ensure the document is written in a professional format suitable for ANZ Open Banking DR validation activities and includes practical OpenShift CLI commands, Splunk searches, OpenSearch checks, and Dynatrace validation steps.
+=======/================================================================/
+Act as a Senior Site Reliability Engineer (SRE), OpenShift Platform Engineer, DevOps Engineer, and QA Automation Engineer.
+
+I am participating in a Disaster Recovery (DR) exercise for Open Banking production systems running on OpenShift. During the DR activity, applications, pods, deployments, services, routes, and workloads may be migrated from one OpenShift cluster/node group to another.
+
+I have OpenShift CLI (oc) access and want to build a reusable DR Automation Toolkit that captures the complete state of an OpenShift namespace before and after DR and automatically generates a comparison report.
+
+Please design and generate a production-quality Bash solution with the following requirements:
+
+## Goal
+
+Create a DR validation automation framework consisting of:
+
+1. dr_capture.sh
+2. dr_compare.sh
+3. healthcheck.sh
+4. generate_report.sh
+
+The solution should work entirely using OpenShift CLI commands.
+
+---
+
+## Pre-DR Capture Requirements
+
+Capture and save all outputs into timestamped folders.
+
+Example:
+
+DR_PRE_YYYYMMDD_HHMMSS
+
+Collect:
+
+### Cluster Information
+
+* Current cluster
+* Logged-in user
+* Current project/namespace
+
+Commands to use:
+
+* oc whoami
+* oc project
+* oc status
+
+### Pods
+
+Capture:
+
+* Pod name
+* Status
+* Ready count
+* Restart count
+* Node
+* Creation timestamp
+* Pod age
+
+Commands:
+
+* oc get pods -o wide
+* oc get pods --sort-by=.metadata.creationTimestamp
+
+### Deployments
+
+Capture:
+
+* Ready replicas
+* Available replicas
+* Desired replicas
+
+Commands:
+
+* oc get deployment
+* oc describe deployment
+
+### StatefulSets
+
+Capture all StatefulSets.
+
+### Services
+
+Capture:
+
+* Service names
+* Cluster IP
+* Ports
+* Target ports
+
+Commands:
+
+* oc get svc -o wide
+* oc get svc -o yaml
+
+### Routes
+
+Capture:
+
+* Hostnames
+* TLS configuration
+* Target services
+
+Commands:
+
+* oc get routes
+* oc get routes -o yaml
+
+### ConfigMaps
+
+Capture all ConfigMaps.
+
+### Secrets References
+
+Capture deployment references to:
+
+* Secrets
+* ConfigMaps
+* Volumes
+
+Do not capture actual secret values.
+
+### Resource Usage
+
+Commands:
+
+* oc adm top pods
+* oc adm top nodes
+
+### Events
+
+Capture:
+
+* All events
+* Sorted by timestamp
+
+Commands:
+
+* oc get events --sort-by=.metadata.creationTimestamp
+
+### Node Placement
+
+Capture:
+
+* Which node every pod is running on
+
+Purpose:
+
+* Verify workload migration after DR
+
+### Logs
+
+Capture last 30 minutes from each deployment.
+
+Commands:
+
+* oc logs deployment/<deployment> --since=30m
+
+---
+
+## Post-DR Capture Requirements
+
+Create:
+
+DR_POST_YYYYMMDD_HHMMSS
+
+Run the same collection process.
+
+---
+
+## Comparison Requirements
+
+Build dr_compare.sh that compares:
+
+Pods
+Deployments
+Services
+Routes
+ConfigMaps
+Node placement
+Events
+Resource utilization
+
+Generate a summary:
+
+PASS
+WARNING
+FAIL
+
+Examples:
+
+PASS - All deployments available
+
+PASS - Service definitions unchanged
+
+WARNING - 3 pods restarted
+
+FAIL - Route hostnames changed
+
+FAIL - Missing deployment
+
+FAIL - FailedScheduling events detected
+
+---
+
+## Health Check Automation
+
+Create healthcheck.sh
+
+Input:
+
+health_endpoints.txt
+
+Example:
+
+https://gateway/health
+https://consent-service/health
+https://payment-service/health
+
+For each endpoint:
+
+Capture:
+
+* HTTP status
+* Response time
+* Response body
+
+Mark:
+PASS
+FAIL
+
+Generate:
+health_report.txt
+
+---
+
+## Advanced Validation
+
+Add optional checks for:
+
+1. Pod restart count increases
+2. CrashLoopBackOff detection
+3. ImagePullBackOff detection
+4. FailedScheduling detection
+5. FailedMount detection
+6. Pending pod detection
+7. Resource usage anomalies
+8. Route changes
+9. Service port changes
+10. Deployment replica changes
+
+---
+
+## Report Generation
+
+Generate:
+
+DR_REPORT.html
+
+Include:
+
+Executive Summary
+
+Environment Details
+
+Pre-DR Snapshot
+
+Post-DR Snapshot
+
+Differences Detected
+
+Health Check Results
+
+Critical Findings
+
+Go/No-Go Recommendation
+
+---
+
+## Deliverables
+
+Provide:
+
+1. Complete Bash scripts
+2. Folder structure
+3. Example execution commands
+4. Example report output
+5. Error handling
+6. Logging strategy
+7. Best practices for OpenShift DR validation
+
+The scripts should be written as if they will be used in a real banking production DR exercise and should be suitable for QA, SRE, Platform Engineering, and DevOps teams.
