@@ -479,3 +479,41 @@ Provide:
 7. Best practices for OpenShift DR validation
 
 The scripts should be written as if they will be used in a real banking production DR exercise and should be suitable for QA, SRE, Platform Engineering, and DevOps teams.
+
+
+
+
+
+//////////============--------------------------------------------\\\\\\\\\\\\
+Enhance dr_compare.sh.
+
+Generate a DR Drift Report.
+
+Compare:
+
+1. Pod count
+2. Deployment count
+3. Deployment replicas
+4. Service ports
+5. Routes
+6. Node placement
+7. Restart counts
+8. OpenShift events
+
+Produce output:
+
+PASS
+WARNING
+FAIL
+
+Example:
+
+PASS - Deployment count unchanged
+
+PASS - Service ports unchanged
+
+WARNING - 3 pods restarted
+
+FAIL - FailedScheduling event detected
+
+FAIL - Route hostname changed
