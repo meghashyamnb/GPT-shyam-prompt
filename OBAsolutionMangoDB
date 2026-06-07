@@ -1,0 +1,236 @@
+Act as a senior software architect, senior QA automation engineer, Node.js developer, and CI/CD engineer.
+
+Analyze this entire repository before suggesting or modifying code.
+
+Background:
+
+This repository stores third-party application configuration in JSON or YAML files. The configuration contains fields such as:
+
+* thirdPartyId
+* clientId
+* client name
+* description
+* status
+* redirect/callback URIs
+* signing keys
+* certificates
+* OpenID scopes
+* account scopes
+* payment scopes
+* permissions such as ReadAccountsBasic and ReadBalances
+
+The pipeline synchronizes this configuration into MongoDB.
+
+Currently, only unit-level snapshot tests exist. These tests do not prove:
+
+* whether newly added configuration is valid
+* what changed compared with the previous deployed configuration
+* whether the pipeline synchronized the changes correctly
+* whether MongoDB contains the expected values
+* whether removed fields were actually removed
+* whether unchanged third parties were accidentally modified
+* whether pipeline reruns create duplicates
+* whether Union and Rehearsal contain the correct environment-specific state
+* whether the application actually uses the synchronized configuration
+
+We have two environments:
+
+1. Union
+2. Rehearsal
+
+The tests must support:
+
+* local execution
+* Union pipeline execution
+* Rehearsal pipeline execution
+
+Do not introduce Playwright automatically. The repository already uses Jest. Prefer Jest and the official MongoDB Node.js driver unless the repository architecture provides a better existing solution.
+
+First inspect and document the repository. Do not modify files yet.
+
+Find the following with exact file paths, function names and pipeline stage names:
+
+1. Third-party configuration files.
+2. The schema and structure of one configuration record.
+3. The stable unique identifier used for comparison.
+4. Configuration loading and parsing logic.
+5. Configuration-to-MongoDB synchronization code.
+6. Whether sync uses insert, update, replace, upsert, hard delete or soft delete.
+7. MongoDB database and collection configuration.
+8. Existing MongoDB connection utilities.
+9. Existing Jest configuration and test conventions.
+10. Existing snapshot tests and what they currently validate.
+11. Union pipeline definition.
+12. Rehearsal pipeline definition.
+13. Local execution scripts.
+14. Existing reporting formats.
+15. Secret and environment-variable handling.
+16. Whether pipeline agents can connect directly to MongoDB.
+17. Whether a previous successful commit or deployed configuration is available.
+18. Whether MongoDB state can be captured before synchronization.
+19. Whether synchronization is synchronous or eventually consistent.
+20. Any known field mapping differences between repository configuration and MongoDB.
+
+Then design the best configuration assurance solution for this repository.
+
+The design must include these layers:
+
+A. Pre-sync configuration validation
+
+Validate:
+
+* JSON/YAML syntax
+* schema
+* mandatory fields
+* data types
+* duplicate thirdPartyId
+* duplicate clientId
+* duplicate callbacks
+* duplicate scopes
+* duplicate permissions
+* allowed status values
+* valid scope-permission combinations
+* callback URI rules
+* signing-key metadata
+* certificate expiry metadata
+* environment-specific values
+* unknown or misspelled properties
+
+B. Structured source change detection
+
+Compare the previous successful configuration with the current configuration as parsed objects, not only as a raw Git text diff.
+
+Generate:
+
+* added records
+* updated records
+* deleted records
+* unchanged records
+* field-level previous and current values
+
+C. Post-sync MongoDB reconciliation
+
+After the existing pipeline sync completes:
+
+* query all changed records
+* compare current configuration with MongoDB
+* validate inserts
+* validate updates
+* validate removed fields
+* validate hard or soft deletion
+* detect duplicates
+* detect stale values
+* verify unchanged records were not modified
+* detect extra MongoDB records
+* detect configuration records missing from MongoDB
+
+D. MongoDB before-versus-after verification
+
+Where technically possible:
+
+* capture changed records before sync
+* capture them after sync
+* compare actual database changes with expected Git changes
+* detect unintended modifications
+
+E. Idempotency validation
+
+Verify that rerunning the same configuration sync produces:
+
+* zero inserts
+* zero unexpected updates
+* zero deletes
+* zero duplicates
+* no unnecessary data changes
+
+F. Failure and recovery validation
+
+Cover:
+
+* invalid configuration
+* partial synchronization
+* MongoDB connection failure
+* sync retry
+* safe rerun after failure
+* environment selection failure
+* pipeline rollback or recovery behaviour
+
+G. Targeted functional smoke tests
+
+Recommend tests based on changed fields:
+
+* permission change → account/payment API authorization smoke
+* callback change → redirect/callback smoke
+* status change → active/inactive client smoke
+* signing-key change → token/signature smoke
+* scope change → issued-scope/API-access smoke
+
+H. Full drift-detection test
+
+Design a complete configuration-to-MongoDB reconciliation that can run on a schedule for both Union and Rehearsal.
+
+Compare these implementation approaches:
+
+1. Extend existing Jest tests.
+2. Create a standalone Node.js reconciliation command using Jest only for assertions.
+3. Build a separate acceptance-test package inside this repository.
+4. Reuse any existing repository validation or sync tooling.
+
+Recommend the lowest-complexity and most maintainable option.
+
+The same implementation must support:
+
+TEST_ENV=union npm run test:config-reconciliation
+
+TEST_ENV=rehearsal npm run test:config-reconciliation
+
+The report must contain:
+
+* environment
+* previous commit
+* current commit
+* configuration file
+* expected added count
+* expected updated count
+* expected deleted count
+* expected unchanged count
+* actual inserted count
+* actual updated count
+* actual deleted count
+* unexpected MongoDB change count
+* overall status
+
+For every changed field, show:
+
+* third-party identifier
+* change type
+* field name
+* previous value
+* current configuration value
+* MongoDB actual value
+* pass/fail
+* failure reason
+
+Mask credentials, tokens, private keys, full certificates and sensitive values.
+
+Provide the output in this order:
+
+1. Repository findings with exact paths.
+2. Current architecture and data flow.
+3. Current test gaps.
+4. Recommended testing architecture.
+5. Test scenario matrix.
+6. Proposed folder structure.
+7. Environment configuration design.
+8. Union pipeline insertion point.
+9. Rehearsal pipeline insertion point.
+10. Local execution method.
+11. Reporting design.
+12. Security controls.
+13. Implementation plan divided into small pull requests.
+14. Risks and limitations.
+15. Questions requiring developer or platform confirmation.
+
+Do not generate final implementation code until the analysis and design have been reviewed.
+
+Avoid generic recommendations. Every conclusion must reference repository evidence such as an exact file path, function, script, package dependency or pipeline stage.
