@@ -234,3 +234,54 @@ Provide the output in this order:
 Do not generate final implementation code until the analysis and design have been reviewed.
 
 Avoid generic recommendations. Every conclusion must reference repository evidence such as an exact file path, function, script, package dependency or pipeline stage.
+
+
+Review all current uncommitted changes in this repository.
+
+Your goal is to make the implementation smaller, clearer, PR-friendly, and consistent with the existing codebase.
+
+Please:
+
+* Remove unnecessary abstractions, wrappers, helper files, comments, and duplicated logic.
+* Prefer existing repository utilities, conventions, patterns, dependencies, and folder structure.
+* Avoid introducing new frameworks or libraries unless clearly required.
+* Keep the smallest implementation needed for the current acceptance criteria.
+* Combine files where separation does not add real value.
+* Replace overly generic or “enterprise-style” code with straightforward repository-specific code.
+* Use meaningful names that match the existing domain language.
+* Remove comments that only restate the code.
+* Keep comments only where the business rule or pipeline behaviour is not obvious.
+* Avoid excessive error handling for impossible or already controlled conditions.
+* Preserve useful validation, security controls, secret masking, and pipeline failure behaviour.
+* Do not reduce test coverage or remove important assertions.
+* Make test failures easy for a developer or QA engineer to understand.
+* Ensure the code works locally, in Union, and in Rehearsal using the existing configuration mechanism.
+* Keep the PR focused only on configuration validation and MongoDB reconciliation. Remove unrelated refactoring.
+
+Before editing, inspect:
+
+1. `git diff`
+2. `git status`
+3. Existing nearby production and test files
+4. Existing Jest and pipeline conventions
+
+Then provide:
+
+1. A short summary of what looks over-engineered.
+2. Files that can be removed or merged.
+3. Dependencies that can be avoided.
+4. A simplified implementation plan.
+5. The actual code changes.
+
+After simplifying, run the relevant lint, type-check, unit, integration, and acceptance-test commands already available in the repository.
+
+Finally, show:
+
+* files changed
+* files removed
+* approximate lines added and removed
+* tests executed
+* any remaining assumptions or risks
+
+Do not rewrite working repository code only for style. Make the changes look like a focused human-authored PR rather than a generated framework.
+
