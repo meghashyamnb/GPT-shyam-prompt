@@ -1,0 +1,457 @@
+Act as a senior Node.js engineer and API testability specialist with experience in Moleculer, cache-manager, structured logging, OpenShift and distributed systems.
+
+I need temporary, production-safe diagnostic logging added to the actual cache implementations so QA can conclusively prove:
+
+1. System Authority token cache miss, downstream fetch, cache store and cache hit.
+2. Third-party configuration cache miss, downstream fetch, cache store and cache hit.
+3. Both cached entries remain available beyond the old incorrect 3.6-second TTL boundary.
+4. A new downstream request occurs only after actual cache expiry or pod restart.
+5. No secrets, tokens or customer information are written to logs.
+
+The logging will be deployed only to an isolated feature-branch Dev namespace and used as QA evidence.
+
+IMPORTANT: INSPECT BEFORE EDITING
+
+First inspect the workspace and identify the exact implementation files for:
+
+- @anz-bank-nz/ob-system-authority
+- @anz-bank-nz/ob-system-authority-moleculer
+- @anz-bank-nz/lib-ob-third-party-config-mixin
+- getSystemAccessToken or equivalent token retrieval method
+- ThirdPartyConfigMixin getThirdParty or equivalent method
+- Actual cache-manager createCache/get/set/wrap calls
+- Actual downstream HTTP calls
+- Existing logger implementation and logging conventions
+- Existing correlation ID or request-context mechanism
+- Existing unit/integration tests
+- Existing feature-flag/environment-variable conventions
+
+Likely currently resolved versions are:
+
+- ob-system-authority-moleculer: 1.0.5
+- ob-system-authority: 1.0.6
+- lib-ob-third-party-config-mixin: 9.0.8
+- cache-manager: 7.2.9
+
+Verify these values against package-lock.json before using them.
+
+Do not edit files under node_modules.
+
+If the actual package source is not part of this workspace:
+
+1. Do not add misleading wrapper-level logs in the consuming application.
+2. Identify the exact source package/repository and files that require instrumentation.
+3. State that internal cache hit/miss cannot be conclusively logged from the consumer layer.
+4. Only use an existing patch-package mechanism if this repository already uses it and the change is explicitly intended as a temporary feature-branch patch.
+
+PRIMARY IMPLEMENTATION REQUIREMENTS
+
+Add temporary structured cache diagnostic logs inside the actual cache implementation.
+
+Logging must be controlled by an environment variable:
+
+CACHE_TEST_LOGGING=true
+
+When CACHE_TEST_LOGGING is absent or not equal to true:
+
+- No new cache diagnostic events should be emitted.
+- Existing application behaviour must remain unchanged.
+
+Support an optional deployment-level test identifier:
+
+CACHE_TEST_RUN_ID=CACHE-TTL-001
+
+Include it in every diagnostic log when available.
+
+Reuse the existing application logger and existing structured logging format.
+
+Do not introduce a new logging library.
+
+Reuse an existing correlation ID, trace ID or Moleculer request context where it is already available.
+
+Do not change public method signatures solely to pass a correlation ID.
+
+Use process.env.HOSTNAME or the existing pod-name field to identify the pod.
+
+SECURITY REQUIREMENTS
+
+Never log:
+
+- Full access token
+- JWT
+- Authorization header
+- Client secret
+- Full System Authority cache key
+- Full token payload
+- Private key
+- Customer data
+- Complete third-party configuration
+- Credentials
+- Sensitive headers
+
+The token cache key currently appears to contain clientId and clientSecret.
+
+Never output that cache key.
+
+Where cache-entry identification is required, use a stable short hash such as SHA-256 of the internal key and emit only the first 12 hexadecimal characters.
+
+Use an existing hashing utility if available. Otherwise use the Node.js built-in crypto module without adding a dependency.
+
+Safe fields may include:
+
+- event
+- cacheName
+- testRunId
+- podName
+- correlationId
+- cacheKeyHash
+- masked thirdPartyId where appropriate
+- configuredTtlMs
+- expiresAtEpochMs
+- durationMs
+- downstreamStatus
+- packageVersion
+- timestamp
+
+Do not log remaining TTL unless cache-manager exposes it without changing the cached data structure or cache semantics.
+
+TOKEN CACHE EVENTS
+
+Instrument the actual System Authority token cache implementation.
+
+Use these event names consistently:
+
+TOKEN_CACHE_LOOKUP
+TOKEN_CACHE_HIT
+TOKEN_CACHE_MISS
+TOKEN_DOWNSTREAM_REQUEST
+TOKEN_DOWNSTREAM_RESPONSE
+TOKEN_CACHE_STORED
+TOKEN_CACHE_FETCH_FAILED
+TOKEN_CACHE_RESET
+
+Required behaviour:
+
+1. TOKEN_CACHE_LOOKUP
+   - Emit immediately before checking the cache.
+   - Include cacheKeyHash, podName and testRunId.
+
+2. TOKEN_CACHE_HIT
+   - Emit only when the cached token is returned.
+   - Do not emit any token value.
+   - Do not emit TOKEN_DOWNSTREAM_REQUEST for a hit.
+
+3. TOKEN_CACHE_MISS
+   - Emit only when the cache implementation must obtain a new token.
+
+4. TOKEN_DOWNSTREAM_REQUEST
+   - Emit immediately before the actual System Authority HTTP request.
+   - Do not log the request body or credentials.
+
+5. TOKEN_DOWNSTREAM_RESPONSE
+   - Emit after a successful System Authority response.
+   - Include only status, durationMs and safe metadata.
+   - Do not log the token.
+
+6. TOKEN_CACHE_STORED
+   - Emit after the token is successfully stored in cache.
+   - Include the exact ttlMs passed to cache-manager.
+   - Include calculated expiresAtEpochMs where possible.
+   - Include ttlBufferInSeconds.
+   - Do not log JWT exp directly when it would expose unnecessary token details; log only the calculated expiry timestamp if safe.
+
+7. TOKEN_CACHE_FETCH_FAILED
+   - Emit when downstream token retrieval fails.
+   - Include safe error type/status only.
+   - Confirm failed responses are not cached.
+
+8. TOKEN_CACHE_RESET
+   - Emit only when resetSystemAccessTokenCache or the actual reset method is invoked.
+
+The logs must show the exact conversion used by the fixed implementation:
+
+effective TTL in seconds =
+JWT exp - current epoch seconds - ttlBufferInSeconds
+
+effective TTL in milliseconds =
+effective TTL in seconds * 1000
+
+Do not change this calculation.
+
+THIRD-PARTY CONFIG CACHE EVENTS
+
+Instrument the actual ThirdPartyConfigMixin cache implementation.
+
+Use these events:
+
+TP_CONFIG_CACHE_LOOKUP
+TP_CONFIG_CACHE_HIT
+TP_CONFIG_CACHE_MISS
+TP_CONFIG_DOWNSTREAM_REQUEST
+TP_CONFIG_DOWNSTREAM_RESPONSE
+TP_CONFIG_CACHE_STORED
+TP_CONFIG_CACHE_FETCH_FAILED
+TP_CONFIG_CACHE_RESET
+
+Required behaviour:
+
+1. TP_CONFIG_CACHE_LOOKUP
+   - Emit before resolving the cache entry.
+   - Include safe thirdPartyId or a hash.
+
+2. TP_CONFIG_CACHE_HIT
+   - Emit only when the cached configuration is returned.
+   - Do not log configuration content.
+
+3. TP_CONFIG_CACHE_MISS
+   - Emit only when the function that retrieves configuration from downstream is executed.
+
+4. TP_CONFIG_DOWNSTREAM_REQUEST
+   - Emit immediately before the actual:
+     GET /1.0/third-parties/{tpId}
+     or the exact endpoint discovered from the source.
+
+5. TP_CONFIG_DOWNSTREAM_RESPONSE
+   - Emit status and duration only.
+   - Do not emit the response body.
+
+6. TP_CONFIG_CACHE_STORED
+   - Emit after successful cache population.
+   - Include the exact ttlMs passed to cache-manager.
+   - Expected default conversion should be:
+     thirdPartiesCacheTtlInSeconds * 1000
+   - Verify this against the actual implementation.
+
+7. TP_CONFIG_CACHE_FETCH_FAILED
+   - Emit on downstream failure.
+   - Confirm the failed result is not stored.
+
+8. TP_CONFIG_CACHE_RESET
+   - Emit only when clearThirdPartyCache or the actual reset method is invoked.
+
+CACHE-MANAGER WRAP HANDLING
+
+If the implementation uses memoryCache.wrap(), accurately distinguish cache hit from cache miss without changing functional behaviour.
+
+A suitable pattern is:
+
+- Initialise a local boolean such as fetchedFromDownstream = false.
+- Inside the wrap callback, set fetchedFromDownstream = true.
+- Emit CACHE_MISS and DOWNSTREAM_REQUEST inside the callback.
+- After wrap returns:
+  - If fetchedFromDownstream is true, emit CACHE_STORED.
+  - Otherwise emit CACHE_HIT.
+
+Confirm that this pattern is safe for the exact cache-manager version and does not change:
+
+- Cache key
+- TTL
+- Cached value
+- Error propagation
+- Concurrency behaviour
+- Return type
+- Downstream invocation count
+
+Do not replace wrap() with separate get()/set() calls unless required and proven behaviourally equivalent.
+
+NO FUNCTIONAL CHANGE
+
+This change is for observability only.
+
+Do not change:
+
+- TTL values
+- Seconds-to-milliseconds conversion
+- ttlBufferInSeconds
+- Cache keys
+- Cache adapter
+- Cache storage
+- Downstream endpoint
+- Request or response payload
+- Retry behaviour
+- Error behaviour
+- Moleculer action behaviour
+- Public API
+- Package dependency versions
+
+Do not add a new HTTP cache-clear endpoint as part of this task.
+
+AUTOMATED TEST REQUIREMENTS
+
+Add or update focused tests for both cache implementations.
+
+Token-cache tests must verify:
+
+1. First call:
+   - TOKEN_CACHE_MISS emitted once.
+   - TOKEN_DOWNSTREAM_REQUEST emitted once.
+   - TOKEN_CACHE_STORED emitted once.
+   - Downstream token method called once.
+
+2. Second call before expiry:
+   - TOKEN_CACHE_HIT emitted once.
+   - No additional TOKEN_DOWNSTREAM_REQUEST.
+   - Downstream token method still called only once.
+
+3. Logging disabled:
+   - No new diagnostic events emitted when CACHE_TEST_LOGGING is not true.
+
+4. Security:
+   - Logged payload does not contain:
+     - clientSecret
+     - full cache key
+     - access token
+     - JWT
+     - Authorization header
+
+5. TTL:
+   - Existing TTL calculation remains unchanged.
+   - Exact ttlMs passed to cache-manager is asserted.
+
+6. Downstream failure:
+   - TOKEN_CACHE_FETCH_FAILED is emitted.
+   - Failed result is not cached.
+   - Next invocation retries downstream.
+
+Third-party config tests must verify:
+
+1. First call:
+   - TP_CONFIG_CACHE_MISS emitted once.
+   - TP_CONFIG_DOWNSTREAM_REQUEST emitted once.
+   - TP_CONFIG_CACHE_STORED emitted once.
+
+2. Second call:
+   - TP_CONFIG_CACHE_HIT emitted once.
+   - Downstream function remains called only once.
+
+3. Logging disabled:
+   - No diagnostic events when the feature flag is disabled.
+
+4. Security:
+   - Full configuration response is never logged.
+
+5. TTL:
+   - Existing seconds-to-milliseconds conversion is unchanged.
+   - Exact ttlMs passed to cache-manager is asserted.
+
+6. Failure:
+   - Failed downstream result is not cached.
+   - A subsequent call retries downstream.
+
+Avoid brittle tests based only on complete formatted log strings.
+
+Assert structured fields and event names.
+
+EXPECTED MANUAL QA LOG SEQUENCE
+
+After deploying the feature branch to a single newly restarted pod, three identical business requests will be sent:
+
+Request 1:
+- Cold cache
+
+Request 2:
+- Immediate repeat
+
+Request 3:
+- More than 10 seconds after Request 1
+
+Expected event counts:
+
+TOKEN_CACHE_MISS = 1
+TOKEN_CACHE_HIT = 2
+TOKEN_DOWNSTREAM_REQUEST = 1
+TOKEN_DOWNSTREAM_RESPONSE = 1
+TOKEN_CACHE_STORED = 1
+
+TP_CONFIG_CACHE_MISS = 1
+TP_CONFIG_CACHE_HIT = 2
+TP_CONFIG_DOWNSTREAM_REQUEST = 1
+TP_CONFIG_DOWNSTREAM_RESPONSE = 1
+TP_CONFIG_CACHE_STORED = 1
+
+This should prove that both cache entries survived beyond the old approximately 3.6-second boundary.
+
+Example safe event shape:
+
+{
+  "event": "TOKEN_CACHE_HIT",
+  "cacheName": "system-authority-token",
+  "testRunId": "CACHE-TTL-001",
+  "podName": "<pod-name>",
+  "cacheKeyHash": "<12-character-hash>",
+  "correlationId": "<existing-correlation-id>"
+}
+
+Example store event:
+
+{
+  "event": "TOKEN_CACHE_STORED",
+  "cacheName": "system-authority-token",
+  "testRunId": "CACHE-TTL-001",
+  "podName": "<pod-name>",
+  "cacheKeyHash": "<12-character-hash>",
+  "ttlMs": 3595000,
+  "ttlBufferInSeconds": 5,
+  "expiresAtEpochMs": "<calculated-safe-timestamp>"
+}
+
+DEPLOYMENT CONFIGURATION
+
+Document the exact feature-branch deployment configuration required:
+
+CACHE_TEST_LOGGING=true
+CACHE_TEST_RUN_ID=CACHE-TTL-001
+
+Also document how to disable it:
+
+CACHE_TEST_LOGGING=false
+
+Do not enable these logs by default in production configuration.
+
+FINAL OUTPUT
+
+After making the change, return:
+
+1. Repository findings:
+   - Exact files containing each cache.
+   - Exact methods instrumented.
+   - Existing logger used.
+   - Whether request correlation context was available.
+
+2. Files changed.
+
+3. Concise diff summary.
+
+4. Explanation of how cache hit and cache miss are reliably distinguished.
+
+5. Confirmation that no functional cache behaviour changed.
+
+6. Security review listing fields deliberately excluded from logs.
+
+7. Tests added or updated.
+
+8. Exact commands to run:
+   - Unit tests
+   - Integration tests
+   - Lint
+   - Type checking/build, where applicable
+
+9. Deployment variables required.
+
+10. Sample expected OpenShift logs for:
+    - First cold request
+    - Immediate cache hit
+    - Cache hit after more than 3.6 seconds
+
+11. QA evidence-count table.
+
+12. Any limitation that prevents conclusive hit/miss logging.
+
+Before finishing:
+
+- Run all relevant tests.
+- Run lint/type checking.
+- Review the diff for accidental token, secret or customer-data logging.
+- Remove invented APIs or configuration.
+- Do not modify node_modules.
+- Do not claim success for commands that were not actually executed.
