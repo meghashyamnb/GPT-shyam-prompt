@@ -1,0 +1,760 @@
+Act as a senior API QA/SDET specialising in Node.js, Moleculer, cache-manager, Postman, Splunk, OpenShift and Xray manual testing.
+
+I need the FINAL executable Xray test cases for the cache TTL feature branch.
+
+Do not redesign the test strategy.
+Do not create another investigation document.
+Do not give generic scenarios.
+Do not create a new Postman collection.
+Do not generate automation code.
+Do not modify application code.
+Do not add extra test cases after completing the required scope.
+
+I will execute the existing API requests manually in Postman and collect evidence from:
+
+1. Postman responses
+2. Splunk logs
+3. OpenShift pod logs
+4. WireMock request journal only where the environment uses WireMock
+
+Every test step must use exactly these Xray columns:
+
+- Action
+- Data
+- Expected Result
+
+Each step must be detailed enough for another tester to execute without asking questions.
+
+==================================================
+LOCKED TECHNICAL FACTS
+==================================================
+
+Use these confirmed facts unless the repository directly proves otherwise:
+
+1. The affected caches are:
+   - System Authority access-token memory cache
+   - Third-party configuration memory cache
+
+2. Both affected caches are module-level, in-process, pod-local caches.
+
+3. Restarting the application pod provides the clean-cache starting state.
+
+4. The existing DELETE /cache endpoint clears only the Moleculer broker cache.
+
+5. DELETE /cache does not clear:
+   - System Authority token memory cache
+   - Third-party configuration memory cache
+
+6. Do not use DELETE /cache as the reset step for the affected cache tests.
+
+7. System Authority token TTL is calculated from:
+
+   JWT exp
+   - current epoch time
+   - ttlBufferInSeconds
+
+   The result is then multiplied by 1000 before being passed to cache-manager.
+
+8. ttlBufferInSeconds is 5 seconds.
+
+9. Third-party config TTL is calculated as:
+
+   thirdPartiesCacheTtlInSeconds × 1000
+
+10. The default third-party config TTL is 3600 seconds:
+
+    3600 × 1000 = 3,600,000 milliseconds
+
+11. The original defect caused 3600 seconds to behave like approximately 3.6 seconds.
+
+12. Feature-branch packages identified are:
+
+    - ob-system-authority-moleculer 1.0.5
+    - ob-system-authority 1.0.6
+    - lib-ob-third-party-config-mixin 9.0.8
+
+13. Use one application pod for deterministic manual cache testing.
+
+14. If multiple pods are running:
+    - either scale to one pod,
+    - target one pod directly,
+    - or validate logs separately per pod.
+
+15. Response time is supporting evidence only.
+
+16. A fast response does not conclusively prove a cache hit.
+
+17. Do not log or attach:
+    - full access tokens
+    - complete JWTs
+    - client secrets
+    - Authorization headers
+    - full token cache keys
+    - complete third-party configuration
+    - customer-sensitive information
+
+==================================================
+PRIMARY OBJECTIVE
+==================================================
+
+Inspect the complete existing Postman collection and the repository.
+
+Identify:
+
+1. Every existing Postman endpoint.
+2. Which endpoints directly or indirectly use:
+   - System Authority token cache
+   - Third-party configuration cache
+   - both caches
+   - neither cache
+3. The exact service, route, action or mixin used by every endpoint.
+4. The exact Postman collection name.
+5. The exact Postman folder name.
+6. The exact Postman request name.
+7. The exact HTTP method and URL path.
+8. Required variables and headers.
+9. Expected response schema or important response fields.
+10. The Splunk/OpenShift logs that should appear for each endpoint.
+11. Which endpoints require cache-specific validation.
+12. Which endpoints require only business regression testing.
+
+Do not assume endpoint impact based only on endpoint names.
+
+Trace each endpoint through the source code.
+
+Example required mapping:
+
+Postman request
+→ route
+→ Moleculer service/action
+→ fetchThirdParty or equivalent
+→ getSystemAccessToken or equivalent
+→ getThirdParty or equivalent
+→ affected cache(s)
+
+==================================================
+MINIMUM ENDPOINTS TO INSPECT
+==================================================
+
+Inspect the collection and repository for at least these endpoints where they exist:
+
+- Health
+- Party
+- Accounts
+- Account by ID
+- Balances
+- Transactions
+- Next transactions or transaction pagination
+- Accounts party
+- Statements
+- Statement by ID
+- Statement file/download
+- Cache-clear request
+- Any other endpoint present in the Postman collection
+
+Do not rename requests.
+
+Use the exact existing Postman request names.
+
+If one of these endpoints does not exist, write:
+
+Not present in the existing Postman collection.
+
+If additional endpoints exist, include them.
+
+==================================================
+FIRST OUTPUT — ENDPOINT IMPACT MATRIX
+==================================================
+
+Before the test cases, create one compact matrix:
+
+| Postman Folder | Exact Request Name | Method | Path | Token Cache Used | Config Cache Used | Reason / Source Path | Test Type |
+
+Allowed Test Type values:
+
+- Cache P0
+- Cache P1
+- Business Regression
+- Infrastructure/Health
+- Not impacted
+
+For Token Cache Used and Config Cache Used, use only:
+
+- Yes
+- No
+- Needs confirmation
+
+Include the source file and function/action proving the mapping.
+
+Do not add lengthy explanation outside the matrix.
+
+==================================================
+LOCKED XRAY TEST CASES
+==================================================
+
+Generate only these Xray tests:
+
+TC-CACHE-001 — Verify fixed package versions are deployed
+
+TC-CACHE-002 — Verify System Authority token and third-party config are reused before expiry
+
+TC-CACHE-003 — Verify both caches survive beyond the old 3.6-second boundary
+
+TC-CACHE-004 — Verify System Authority token refreshes after effective expiry
+
+TC-CACHE-005 — Verify five-second token cache buffer
+
+TC-CACHE-006 — Verify third-party configuration refreshes after TTL
+
+TC-CACHE-007 — Verify third-party config cache-key isolation
+
+TC-CACHE-008 — Verify token downstream failure is not cached
+
+TC-CACHE-009 — Verify third-party configuration failure is not cached
+
+TC-CACHE-010 — Verify all existing impacted business endpoints continue to work
+
+TC-CACHE-011 — Verify all existing non-impacted endpoints continue to work
+
+Do not create Smoke-01, Smoke-02 or separate smoke test IDs.
+
+All endpoint regression steps must be included inside TC-CACHE-010 or TC-CACHE-011.
+
+==================================================
+MANDATORY XRAY FORMAT
+==================================================
+
+For every test case, use exactly this format:
+
+Test ID:
+Title:
+Priority:
+Objective:
+
+Preconditions:
+- Exact environment
+- Exact replica/pod requirement
+- Exact deployment requirement
+- Exact cache starting state
+- Exact test-data requirement
+- Exact WireMock/downstream setup where required
+- Exact logging requirement
+
+Test Steps:
+
+| Step | Action | Data | Expected Result |
+|------|--------|------|-----------------|
+| 1 | Exact tester action | Exact values and inputs | Exact observable outcome |
+| 2 | Exact tester action | Exact values and inputs | Exact observable outcome |
+
+Evidence to attach:
+- Exact Postman screenshot
+- Exact Splunk evidence
+- Exact OpenShift pod-log evidence
+- WireMock evidence only where applicable
+
+Pass criteria:
+
+Fail criteria:
+
+Do not include:
+
+- Separate limitations section
+- Screenshot checklist
+- Repository-analysis narrative
+- Test strategy narrative
+- Generic recommendations
+- Implementation-change suggestions
+- New log proposals
+- Automated test code
+- New Postman collection JSON
+
+==================================================
+ACTION COLUMN RULES
+==================================================
+
+Every Action must tell QA exactly what to do.
+
+Good:
+
+“Scale the feature-branch deployment to one replica, restart the deployment and wait until the new pod reaches Ready status.”
+
+Bad:
+
+“Prepare clean cache.”
+
+Good:
+
+“Open the existing Postman collection, navigate to folder <exact folder>, select request <exact request name>, set the listed environment variables and click Send.”
+
+Bad:
+
+“Call the API.”
+
+Good:
+
+“In Splunk, filter by the new pod name and the test start/end timestamps, then count SAT_TOKEN_REQUESTED_FROM_SYS_AUTH events.”
+
+Bad:
+
+“Check logs.”
+
+==================================================
+DATA COLUMN RULES
+==================================================
+
+Every Data field must contain exact values or placeholders that QA can replace.
+
+Include, where applicable:
+
+- Environment
+- Namespace
+- Deployment name
+- Pod name
+- Replica count
+- Existing Postman collection
+- Existing Postman folder
+- Existing Postman request
+- HTTP method
+- Endpoint path
+- thirdPartyId
+- accountId
+- statementId
+- pagination token
+- correlation ID
+- test start time
+- test end time
+- wait duration
+- expected TTL
+- JWT validity
+- ttlBufferInSeconds
+- expected downstream count
+- Splunk index/source fields
+- OpenShift log filters
+
+Use confirmed existing variable names from the collection.
+
+Do not invent variable names.
+
+Where a value is environment-specific, write:
+
+QA to record before execution: <value>
+
+==================================================
+EXPECTED RESULT COLUMN RULES
+==================================================
+
+Every Expected Result must be observable and measurable.
+
+Good:
+
+“The request returns HTTP 200 and the expected party response schema.”
+
+Good:
+
+“The cumulative SAT_TOKEN_REQUESTED_FROM_SYS_AUTH count for the same pod and test window remains 1.”
+
+Good:
+
+“The cumulative TP_CONFIG_DOWNSTREAM_REQUEST count remains 1 after the second request.”
+
+Bad:
+
+“The token is cached.”
+
+Bad:
+
+“The request should be faster.”
+
+Bad:
+
+“Cache works correctly.”
+
+==================================================
+LOG EVIDENCE RULES
+==================================================
+
+For every test involving logs, specify separately:
+
+1. Splunk evidence
+2. OpenShift pod-log evidence
+
+Each log step must include:
+
+- pod name
+- namespace
+- test start time
+- test end time
+- correlation ID where available
+- exact event/log text
+- expected cumulative count
+
+Token fresh-fetch evidence may include:
+
+- TOKEN_LOOKUP_STARTED
+- SAT_TOKEN_REQUESTED_FROM_SYS_AUTH
+- SAT_TOKEN_RECEIVED
+- TOKEN_LOOKUP_COMPLETE
+
+Use the exact event names found in the source.
+
+Token reuse evidence must be expressed as:
+
+- Business request succeeds.
+- No additional SAT_TOKEN_REQUESTED_FROM_SYS_AUTH appears.
+- Cumulative token downstream count remains unchanged.
+
+Do not invent TOKEN_CACHE_HIT if it is not emitted by the actual package.
+
+Third-party config evidence may include:
+
+- TP_CONFIG_CACHE_LOOKUP
+- TP_CONFIG_CACHE_MISS
+- TP_CONFIG_DOWNSTREAM_REQUEST
+- TP_CONFIG_CACHE_STORED
+- TP_CONFIG_CACHE_HIT
+- TP_CONFIG_CACHE_FETCH_FAILED
+
+Use only events confirmed in source code.
+
+Do not use durationMs as the primary cache proof.
+
+==================================================
+TC-CACHE-001 REQUIREMENTS
+==================================================
+
+Include steps to verify:
+
+1. Feature-branch commit/image is deployed.
+2. Correct package-lock.json versions:
+   - ob-system-authority-moleculer
+   - ob-system-authority
+   - lib-ob-third-party-config-mixin
+3. Token TTL conversion includes ×1000.
+4. Config TTL conversion includes ×1000.
+5. Relevant test-logging environment variables are correctly deployed, if used.
+
+Expected result must state:
+
+Version and code verification prove the fix is present but do not alone prove runtime cache behaviour.
+
+==================================================
+TC-CACHE-002 REQUIREMENTS
+==================================================
+
+Test cache reuse before expiry.
+
+Execution must be:
+
+1. Scale to one pod.
+2. Restart pod.
+3. Record pod name and test start time.
+4. Run the exact existing Postman business request that exercises both caches.
+5. Capture first response.
+6. Confirm one token downstream request.
+7. Confirm one config downstream request.
+8. Immediately run the same request again using the same:
+   - client credentials
+   - thirdPartyId
+   - relevant cache-key inputs
+9. Capture second response.
+10. Confirm token downstream cumulative count remains 1.
+11. Confirm config downstream cumulative count remains 1.
+12. Confirm a config cache-hit event exists where supported.
+
+Do not use response time as the pass criterion.
+
+==================================================
+TC-CACHE-003 REQUIREMENTS
+==================================================
+
+Test original 3.6-second regression.
+
+Execution must be:
+
+1. Restart one pod.
+2. Run the selected business request.
+3. Confirm initial downstream token/config counts are 1.
+4. Wait exactly 10 seconds.
+5. Run the same request again.
+6. Confirm token count remains 1.
+7. Confirm config count remains 1.
+
+Expected result must state:
+
+This proves both entries survive beyond the old 3.6-second defect boundary. It does not prove exact one-hour expiry.
+
+==================================================
+TC-CACHE-004 REQUIREMENTS
+==================================================
+
+Test token refresh after effective expiry.
+
+Use controlled test data where available:
+
+- Future-dated JWT
+- Short token validity
+- Example:
+  token validity = 20 seconds
+  ttlBufferInSeconds = 5 seconds
+  effective cache TTL ≈ 15 seconds
+
+Execution must include:
+
+- T+0 request
+- Request before effective expiry
+- Request after effective expiry
+- Immediate request after refresh
+
+Expected cumulative token counts:
+
+- T+0: 1
+- Before expiry: 1
+- After expiry: 2
+- Immediate repeat: 2
+
+Use exact timings supported by the environment.
+
+If the environment cannot shorten expiry, retain the test and mark:
+
+Execution requires controlled WireMock token expiry or approved test configuration.
+
+==================================================
+TC-CACHE-005 REQUIREMENTS
+==================================================
+
+Test the five-second buffer separately.
+
+Execution must prove:
+
+1. Original token is valid until T+20.
+2. Cache is expected to expire around T+15.
+3. Request before T+15 reuses token.
+4. Request after T+15 fetches new token.
+5. Original token was still technically valid at refresh time.
+
+Use a safe timing tolerance.
+
+Do not require exact millisecond timing for a manual test.
+
+==================================================
+TC-CACHE-006 REQUIREMENTS
+==================================================
+
+Test config refresh after TTL.
+
+Use controlled data:
+
+- Short config TTL, such as 15 seconds
+- VERSION-A as first downstream marker
+- VERSION-B as changed downstream marker
+
+Execution:
+
+1. Restart pod.
+2. Fetch VERSION-A.
+3. Change downstream to VERSION-B.
+4. Request before expiry.
+5. Confirm VERSION-A is still used and downstream count remains 1.
+6. Request after expiry.
+7. Confirm VERSION-B is fetched and downstream count becomes 2.
+8. Immediately repeat.
+9. Confirm VERSION-B is reused and count remains 2.
+
+Do not require or capture the full third-party configuration.
+
+Use only a safe marker or non-sensitive field.
+
+==================================================
+TC-CACHE-007 REQUIREMENTS
+==================================================
+
+Test cache-key isolation.
+
+Use two confirmed third-party IDs from the test environment.
+
+Execution:
+
+1. Restart pod.
+2. Request Third Party A.
+3. Request Third Party B.
+4. Repeat Third Party A.
+5. Repeat Third Party B.
+6. Confirm one initial config downstream call per unique third-party ID.
+7. Confirm A never receives B’s config marker.
+8. Confirm B never receives A’s config marker.
+
+Do not replace this test with “only one downstream call in the full log.”
+
+==================================================
+TC-CACHE-008 REQUIREMENTS
+==================================================
+
+Test token failure not cached.
+
+Execution:
+
+1. Start with empty token cache.
+2. Configure token downstream to return HTTP 500.
+3. Run business request.
+4. Confirm failure behaviour.
+5. Confirm no token-cache-store event.
+6. Configure a valid future-dated token.
+7. Repeat business request.
+8. Confirm token downstream is called again.
+9. Repeat once more.
+10. Confirm token downstream count does not increase again.
+
+==================================================
+TC-CACHE-009 REQUIREMENTS
+==================================================
+
+Test config failure not cached.
+
+Execution:
+
+1. Start with empty config cache.
+2. Configure config downstream to return HTTP 500.
+3. Run request.
+4. Confirm failure behaviour.
+5. Confirm no config-cache-store event.
+6. Configure VERSION-A success response.
+7. Repeat request.
+8. Confirm downstream is called again.
+9. Repeat once more.
+10. Confirm VERSION-A is reused and count remains unchanged.
+
+==================================================
+TC-CACHE-010 REQUIREMENTS
+==================================================
+
+Cover every existing business endpoint that is impacted by one or both affected caches.
+
+Use the endpoint impact matrix to determine the steps.
+
+At minimum, inspect and include separate Xray steps for existing requests such as:
+
+- Party
+- Accounts
+- Account by ID
+- Balances
+- Transactions
+- Next transactions/pagination
+- Accounts party
+- Statements
+- Statement by ID
+- Statement file
+
+For each endpoint step include:
+
+Action:
+- Exact Postman folder and request to execute.
+
+Data:
+- Exact existing environment variables and test data.
+
+Expected Result:
+- HTTP status.
+- Response schema.
+- Important business fields.
+- Expected token/config cache path.
+- Relevant Splunk/OpenShift evidence.
+- No regression from the package upgrade.
+
+Do not create separate smoke test IDs.
+
+==================================================
+TC-CACHE-011 REQUIREMENTS
+==================================================
+
+Cover every existing endpoint that does not use either affected cache.
+
+Examples may include:
+
+- Health
+- Infrastructure/utility endpoints
+- Broker cache-clear route
+
+For each endpoint:
+
+- Execute from the existing Postman collection.
+- Validate expected response.
+- Confirm no unexpected token/config cache events.
+- Do not claim DELETE /cache clears the affected caches.
+
+==================================================
+EXECUTION ORDER
+==================================================
+
+At the end, provide the exact execution order:
+
+1. TC-CACHE-001
+2. TC-CACHE-002
+3. TC-CACHE-003
+4. TC-CACHE-007
+5. TC-CACHE-010
+6. TC-CACHE-011
+7. TC-CACHE-004
+8. TC-CACHE-005
+9. TC-CACHE-006
+10. TC-CACHE-008
+11. TC-CACHE-009
+
+Explain no strategy—only show the ordered list with required environment mode:
+
+- Real Dev downstream
+- WireMock/controlled downstream
+- One-pod setup
+
+==================================================
+FINAL EVIDENCE CHECKLIST
+==================================================
+
+Provide one final compact checklist:
+
+- Feature-branch commit/image
+- Correct package versions
+- Pod name
+- Namespace
+- Replica count
+- Pod restart timestamp
+- Test start/end timestamp
+- Postman request screenshot
+- Postman response screenshot
+- Correlation ID
+- Splunk query screenshot
+- OpenShift pod-log screenshot
+- Token downstream cumulative count
+- Config downstream cumulative count
+- Cache-hit evidence
+- Before-expiry evidence
+- After-expiry evidence
+- 10-second regression evidence
+- No sensitive data in attachments
+
+==================================================
+FINAL QUALITY GATE
+==================================================
+
+Before returning the result:
+
+1. Verify every endpoint against the actual Postman collection.
+2. Verify every endpoint impact against source code.
+3. Use exact existing Postman names.
+4. Use exact existing variable names.
+5. Use exact confirmed log events.
+6. Use Action, Data and Expected Result for every step.
+7. Do not include vague steps.
+8. Do not rely on response time.
+9. Do not invent token cache-hit logs.
+10. Do not use DELETE /cache to reset the affected caches.
+11. Do not capture full config JSON.
+12. Do not change the agreed test IDs.
+13. Do not add new test IDs.
+14. Do not output analysis or limitations.
+15. Return only:
+    - Endpoint impact matrix
+    - Common preconditions
+    - Eleven Xray test cases
+    - Execution order
+    - Evidence checklist
