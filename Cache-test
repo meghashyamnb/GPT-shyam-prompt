@@ -1,0 +1,561 @@
+Act as a senior API QA engineer specialising in Node.js, Moleculer, Postman, cache-manager, WireMock, Splunk and OpenShift.
+
+I need final manual test cases for the cache TTL fixes in this feature branch.
+
+IMPORTANT WORKING INSTRUCTIONS
+
+1. Inspect the repository, installed dependencies, package-lock.json, feature-branch changes, configuration files, existing tests, WireMock mappings and my existing Postman collection.
+2. Perform the technical investigation yourself.
+3. Do not ask me to locate files unless the information genuinely cannot be found.
+4. Do not create or modify a Postman collection.
+5. Do not create application code.
+6. Do not suggest code changes unless a test is impossible because observability is missing.
+7. Use only existing Postman requests.
+8. Refer to Postman folders and requests by their exact existing names.
+9. Do not invent endpoints, headers, variables, configuration properties, log messages or cache-clear behaviour.
+10. Mark anything that cannot be confirmed as:
+
+Needs confirmation: <exact missing information>
+
+11. Do not expose passwords, client secrets, complete access tokens, private keys or customer data.
+12. Use token markers, JWT jti, safe hashes or masked values instead of complete tokens.
+13. Final output must contain:
+    - One compact implementation facts section.
+    - Complete manual test scenarios.
+    - No lengthy explanation of how you searched the repository.
+    - No source-code changes.
+    - No Postman collection JSON.
+
+BACKGROUND
+
+The application includes:
+
+- @anz-bank-nz/ob-system-authority-moleculer
+- An underlying ob-system-authority implementation used internally by the Moleculer library
+- @anz-bank-nz/lib-ob-third-party-config-mixin
+- A System Authority access-token cache
+- A third-party configuration cache
+
+The original defect was caused by a TTL intended as 3600 seconds being passed to a cache implementation that interpreted it as 3600 milliseconds. This caused cache expiry after approximately 3.6 seconds.
+
+The fixed implementation should convert:
+
+3600 seconds → 3,600,000 milliseconds
+
+The System Authority token cache also has a configuration similar to:
+
+systemAuthority.cache.ttlBufferInSeconds = 5
+
+The effective token-cache lifetime should therefore be:
+
+token expires_in minus ttlBufferInSeconds
+
+I already have a working Postman collection containing the required business APIs and cache requests.
+
+REPOSITORY INVESTIGATION TO PERFORM SILENTLY
+
+Inspect and confirm the following before creating the test cases.
+
+A. Exact dependency resolution
+
+Inspect package.json, package-lock.json and installed package metadata.
+
+Identify:
+
+- Exact installed version of ob-system-authority-moleculer
+- Exact underlying ob-system-authority package and version
+- Exact third-party-config-mixin version
+- Whether dependency versions are direct or transitive
+- Whether the fixed packages are actually resolved in package-lock.json
+- Which package contains the seconds-to-milliseconds conversion
+
+Do not assume that the package.json caret version is the installed version.
+
+B. System Authority call chain
+
+Trace the exact call chain from the business API to the token endpoint:
+
+Business API
+→ route/action/service
+→ ob-system-authority-moleculer
+→ underlying ob-system-authority implementation
+→ getSystemAccessToken or equivalent
+→ token cache
+→ System Authority token endpoint
+
+Identify:
+
+- Exact business APIs that trigger token retrieval
+- Exact Moleculer service/action
+- Exact token endpoint path and HTTP method
+- Token cache key
+- Cache adapter/store
+- Cache get/set implementation
+- TTL source
+- TTL unit
+- expires_in handling
+- ttlBufferInSeconds handling
+- Exact effective TTL calculation
+- Whether the cache is local to each pod or shared
+- Existing logs or metrics proving token fetch, cache hit, cache miss or refresh
+
+C. Third-party configuration call chain
+
+Trace:
+
+Business API
+→ third-party identification
+→ third-party config mixin/service
+→ config cache
+→ downstream third-party configuration endpoint
+
+Identify:
+
+- Exact business APIs that trigger config lookup
+- Exact downstream config endpoint
+- Third-party config cache key
+- TTL source and unit
+- Cache adapter/store
+- Cache-clear implementation
+- Logs or metrics proving downstream config retrieval
+- Whether failed responses are cached
+- Whether different thirdPartyIds use separate cache entries
+
+D. Cache-clear behaviour
+
+Inspect the exact cache-clear route/action and determine:
+
+- Exact existing Postman request name
+- HTTP method and endpoint
+- Whether it clears the System Authority token cache
+- Whether it clears third-party config cache
+- Whether it clears both
+- Whether it clears one key or all keys
+- Whether it clears only the receiving pod
+- Whether it clears all pods or a shared cache
+
+Do not assume DELETE /cache clears every cache.
+
+E. Existing Postman collection
+
+Identify exact existing:
+
+- Collection name
+- Folder names
+- Request names
+- Business API request that triggers both token and config retrieval
+- Cache-clear request
+- Environment variable names
+- thirdPartyId variable
+- Correlation-ID header or variable
+- Required headers and test-data fields
+
+Do not create duplicate requests.
+
+F. Observability
+
+Identify how QA can conclusively count:
+
+- Business API calls
+- System Authority token endpoint calls
+- Third-party configuration endpoint calls
+
+Prefer, in this order:
+
+1. WireMock request journal
+2. Downstream mock verification
+3. Splunk logs
+4. OpenShift pod logs
+5. Dynatrace or application metrics
+6. Response time only as supporting evidence
+
+Response time alone must never be considered proof of caching.
+
+G. Environment behaviour
+
+Identify:
+
+- Number of running pods
+- Whether the cache is pod-local or shared
+- Whether requests can be directed to one pod
+- Whether sticky routing is available
+- Whether cache clear affects one pod or all pods
+- Whether TTL and token expires_in can be reduced in a controlled QA environment
+- Whether WireMock token/config responses can be changed during testing
+
+FINAL OUTPUT FORMAT
+
+SECTION 1 — IMPLEMENTATION FACTS FOR QA
+
+Provide one compact table containing only:
+
+- Exact installed package versions
+- Package containing the actual fix
+- Business API request used
+- System Authority token endpoint
+- Third-party config endpoint
+- Token cache key
+- Config cache key
+- Token TTL
+- ttlBufferInSeconds
+- Effective token TTL
+- Third-party config TTL
+- Cache adapter/store
+- Cache local or shared
+- Cache-clear scope
+- Method for counting token calls
+- Method for counting config calls
+- Number of pods
+- Postman folder and request names
+- Any unresolved information
+
+Include source filename and function/configuration name for each confirmed fact.
+
+SECTION 2 — FINAL MANUAL TEST SCENARIOS
+
+Create Xray-ready manual test cases.
+
+For every test case use exactly this structure:
+
+Test ID:
+Priority:
+Title:
+
+Purpose:
+
+Implementation reference:
+- Source file
+- Function/action
+- Configuration property
+- Existing automated test, if available
+
+Existing Postman request:
+- Collection
+- Folder
+- Exact request name
+- HTTP method
+
+Preconditions:
+- Environment
+- Pod-routing requirement
+- Cache state
+- Test data
+- Required downstream/WireMock state
+- Required runtime configuration
+
+Execution steps:
+
+Step 1:
+Action:
+Expected result:
+Evidence to capture:
+
+Step 2:
+Action:
+Expected result:
+Evidence to capture:
+
+Continue until complete.
+
+Expected call-count table:
+
+| Stage | Business API calls | Token endpoint calls | Config endpoint calls |
+
+Pass criteria:
+
+Fail criteria:
+
+Evidence for Xray:
+
+Cleanup:
+
+Limitations:
+
+REQUIRED TEST CASES
+
+TC-01 — Confirm fixed package versions are deployed
+
+Verify that the runtime/build uses the corrected versions of:
+
+- ob-system-authority-moleculer
+- underlying ob-system-authority
+- third-party-config-mixin
+
+This is deployment verification, not proof of runtime cache behaviour.
+
+TC-02 — System Authority token reused before expiry
+
+Required proof:
+
+- Start with token cache empty.
+- First business request fetches TOKEN-A.
+- Second identical business request within TTL does not call the token endpoint again.
+- Token endpoint call count remains 1.
+- TOKEN-A, its jti, token marker or safe hash is reused.
+
+Postman response success alone is insufficient.
+
+TC-03 — System Authority token survives past the old 3.6-second boundary
+
+Required sequence:
+
+- Clear/reset token cache using the supported mechanism.
+- Run the existing business request.
+- Confirm token endpoint count = 1.
+- Wait at least 5–10 seconds.
+- Run the same request again.
+- Confirm token endpoint count remains 1.
+
+This proves the token cache did not expire after approximately 3.6 seconds.
+
+Only include this test if the affected token-cache path used the defective TTL handling.
+
+TC-04 — System Authority token refreshes after effective TTL
+
+Where possible, use a controlled shortened lifetime such as:
+
+- expires_in = 20 seconds
+- ttlBufferInSeconds = 5 seconds
+- effective cache TTL = approximately 15 seconds
+
+The actual timings must come from repository/runtime configuration.
+
+Required sequence:
+
+- T+0: TOKEN-A fetched; token endpoint count = 1.
+- Before effective expiry: TOKEN-A reused; count remains 1.
+- After effective expiry: TOKEN-B fetched; count becomes 2.
+- Immediately after refresh: TOKEN-B reused; count remains 2.
+
+TC-05 — ttlBufferInSeconds is applied
+
+Prove that the token is refreshed after the effective cache boundary but before the token’s actual expiry.
+
+Test both sides:
+
+- Immediately before effective cache expiry: old token reused.
+- Immediately after effective cache expiry: new token fetched.
+- At refresh time, the old token must still be valid according to expires_in.
+
+Explain the exact timing used and the allowed timing tolerance.
+
+TC-06 — Third-party configuration reused before expiry
+
+Required sequence:
+
+- Clear only the relevant config cache where supported.
+- Request config for one thirdPartyId.
+- Confirm downstream config call count = 1.
+- Repeat the same request using the same cache key.
+- Confirm config call count remains 1.
+- Confirm the same configuration is used.
+
+TC-07 — Original third-party 3.6-second regression
+
+Required sequence:
+
+- Confirm runtime TTL is 3600 seconds.
+- Clear relevant cache.
+- Call the existing business/config request.
+- Confirm config endpoint count = 1.
+- Wait 5–10 seconds.
+- Repeat the same request with the same cache key.
+- Confirm config endpoint count remains 1.
+
+State clearly:
+
+This proves the cache survives the old 3.6-second boundary. It does not alone prove an exact one-hour lifetime.
+
+Also identify the unit/integration test that proves:
+
+3600 seconds → 3,600,000 milliseconds
+
+TC-08 — Third-party config refreshes after intended TTL
+
+Use a shortened TTL where supported.
+
+Required controlled responses:
+
+- Initial downstream value: VERSION-A
+- Updated downstream value: VERSION-B
+
+Sequence:
+
+- Fetch VERSION-A; downstream count = 1.
+- Change downstream response to VERSION-B.
+- Before expiry, repeat request; application still uses VERSION-A and count remains 1.
+- After expiry, repeat request; application uses VERSION-B and count becomes 2.
+- Immediately repeat; VERSION-B is reused and count remains 2.
+
+TC-09 — Cache-clear behaviour
+
+First identify exactly which cache the existing clear request affects.
+
+Sequence:
+
+- Clear supported cache.
+- Run business request; downstream count becomes 1.
+- Repeat; count remains 1.
+- Trigger cache clear.
+- Run again; affected downstream count becomes 2.
+
+Do not expect the token endpoint count to increase when only the config cache is cleared.
+
+Do not expect config count to increase when only the token cache is cleared.
+
+TC-10 — Token cache and config cache isolation
+
+Prove both caches independently.
+
+Where supported:
+
+Scenario A:
+- Keep token cache warm.
+- Clear config cache only.
+- Next request should reuse token but refetch config.
+
+Expected:
+- Token endpoint count unchanged.
+- Config endpoint count increases by 1.
+
+Scenario B:
+- Keep config cache warm.
+- Expire or clear token cache only.
+- Next request should fetch a token but reuse config.
+
+Expected:
+- Token endpoint count increases by 1.
+- Config endpoint count unchanged.
+
+If independent clearing is impossible, state the exact limitation.
+
+TC-11 — Third-party cache-key isolation
+
+Use two different thirdPartyIds.
+
+Sequence:
+
+- Request Third Party A.
+- Request Third Party B.
+- Repeat Third Party A.
+- Repeat Third Party B.
+
+Expected:
+
+- A never receives B’s configuration.
+- B never receives A’s configuration.
+- Each unique cache key causes one initial downstream call.
+- Repeated requests reuse the corresponding cached entry.
+
+TC-12 — Downstream token failure is not cached
+
+Where testable:
+
+- Configure first token request to fail.
+- Run business request and confirm failure/fallback behaviour.
+- Configure token endpoint to succeed with TOKEN-A.
+- Run again.
+- Confirm token endpoint is called again.
+- Confirm TOKEN-A is subsequently cached and reused.
+
+TC-13 — Downstream config failure is not cached
+
+Where testable:
+
+- Configure first config request to return failure.
+- Run business request.
+- Change config endpoint to return VERSION-A.
+- Run the same request again.
+- Confirm config endpoint is called again.
+- Confirm successful configuration is then cached.
+
+TC-14 — Warm-cache repeated requests
+
+- Populate both caches.
+- Record token and config call counts.
+- Run the existing business request several times using the same cache keys.
+- Confirm all requests succeed.
+- Confirm neither downstream count increases.
+
+Do not test cold-cache request coalescing unless the implementation explicitly promises single-flight behaviour.
+
+TC-15 — Multiple-pod cache behaviour
+
+Only include this test when multiple pods are running.
+
+Determine whether cache is pod-local or shared.
+
+For pod-local cache:
+
+- Prove cache behaviour separately on the same pod.
+- Document that different pods may each perform one initial downstream fetch.
+- Verify cache-clear scope per pod.
+
+For shared cache:
+
+- Populate through one pod.
+- Call through another pod.
+- Confirm downstream is not called again.
+
+TC-16 — Cache-clear authorization and safety
+
+Verify:
+
+- Unauthorised callers cannot clear cache.
+- Invalid cache key or thirdPartyId is handled safely.
+- Clearing one third party does not clear unrelated third parties unless full-cache clearing is the documented design.
+- Cache-clear operation does not return sensitive cached data.
+
+RECOMMENDED P0 EXECUTION ORDER
+
+At the end, provide the exact recommended P0 order using existing Postman request names:
+
+1. Confirm package/deployment versions.
+2. Confirm cache-clear scope.
+3. Token reuse before expiry.
+4. Third-party config reuse before expiry.
+5. Original 3.6-second regression for affected caches.
+6. Config refresh after expiry.
+7. Token refresh and ttlBuffer boundary.
+8. Cache clear.
+9. Cache-key isolation.
+10. Failure-not-cached scenarios.
+
+FINAL EVIDENCE CHECKLIST
+
+Include a compact checklist containing:
+
+- Exact package versions
+- Runtime TTL values
+- Buffer value
+- Cache-clear response
+- Postman request/response
+- Correlation IDs
+- Timestamps
+- Pod names
+- Token endpoint call count
+- Config endpoint call count
+- Token marker or safe hash
+- Config version
+- WireMock/Splunk/OpenShift evidence
+- Before-expiry evidence
+- After-expiry evidence
+- Evidence after cache clear
+
+FINAL QUALITY CHECK
+
+Before returning the answer:
+
+1. Recheck every request name against the existing Postman collection.
+2. Recheck every endpoint and configuration property against the repository.
+3. Recheck package versions against package-lock.json.
+4. Remove assumptions.
+5. Replace unsupported details with “Needs confirmation”.
+6. Make every test manually executable.
+7. Ensure downstream call counts, not response time, are the primary cache proof.
+8. Output only:
+   - Compact implementation facts
+   - Final Xray-ready manual test scenarios
+   - P0 execution order
+   - Evidence checklist
+   - Unresolved items
