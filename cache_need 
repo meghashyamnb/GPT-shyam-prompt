@@ -1,0 +1,156 @@
+I need you to perform a technical impact analysis of a cache TTL change and determine whether QA genuinely needs to wait 1 hour to validate the fix in the deployed environment.
+
+Context:
+
+The issue was related to cache-manager TTL units.
+
+Previously, a TTL/config value of "3600" was being interpreted as milliseconds in some environments, resulting in approximately 3.6 seconds instead of the intended 1 hour.
+
+The fix was introduced through these package upgrades:
+
+1. Node "ob-system-authority"
+   
+   - Old: 1.0.5
+   - New: 1.0.6
+
+2. Moleculer "ob-system-authority"
+   
+   - Old: 1.0.4
+   - New: 1.0.5
+
+3. "ob-third-party-config-mixin"
+   
+   - Old: 9.0.7
+   - New: 9.0.8
+
+The system-authority change is expected to convert the configured cache/token TTL to the unit expected by cache-manager, including multiplication by 1000 where applicable.
+
+I need you to inspect the actual codebase and dependencies. Do not assume the above description is correct.
+
+Please analyse:
+
+1. Identify every location where these packages are imported or consumed.
+
+2. Trace the complete flow:
+   config value
+   → consuming application
+   → system-authority / third-party-config package
+   → cache-manager
+   → cache set/get
+   → access-token/config retrieval
+   → expiry/refresh.
+
+3. Find every TTL-related property, including names such as:
+   
+   - ttl
+   - expiresIn
+   - cacheTTL
+   - cacheTtl
+   - tokenExpiry
+   - expiry
+   - maxAge
+   - any equivalent configuration.
+
+4. Determine the exact units expected at each layer:
+   
+   - seconds
+   - milliseconds
+   - absolute timestamp
+   - library default.
+
+5. Check the installed versions of:
+   
+   - cache-manager
+   - ob-system-authority
+   - ob-third-party-config-mixin
+   - Moleculer-related cache libraries
+   - any other transitive dependency involved in caching.
+
+6. Inspect package-lock.json / npm lockfile and confirm which actual versions are installed, not just package.json declarations.
+
+7. Find the exact code change introduced between the old and new package versions if that code is available locally.
+
+8. Determine whether "3600" eventually becomes:
+   
+   - 3600 ms,
+   - 3,600,000 ms,
+   - 3600 seconds,
+   - or something else.
+
+9. Identify existing unit and integration tests covering:
+   
+   - cache creation
+   - cache hit
+   - cache miss
+   - TTL
+   - token reuse
+   - token refresh
+   - config refresh
+   - cache expiry.
+
+10. Determine whether the one-hour behaviour can already be proven through automated tests by:
+    
+    - mocking/faking timers,
+    - injecting a smaller TTL,
+    - using Jest fake timers,
+    - overriding environment configuration,
+    - directly inspecting cache metadata,
+    - or another reliable mechanism.
+
+11. Most importantly, answer:
+
+Does QA need to literally wait 1 hour in the deployed environment to validate this fix?
+
+Classify the answer as one of:
+
+A. YES — a real 1-hour runtime test is technically necessary.
+
+B. NO — existing unit/integration tests prove the TTL conversion and QA only needs targeted functional validation.
+
+C. PARTIALLY — automated testing should prove the TTL calculation, but one deployed-environment test is useful to verify runtime configuration/integration.
+
+For your conclusion, provide code references and explain exactly WHY.
+
+12. If a real one-hour test is recommended, define exactly what QA should verify:
+
+T0:
+
+- make request
+- identify token/config/cache value
+- capture logs/evidence
+
+Before expiry:
+
+- make another request
+- prove cached value/token is reused
+
+After 1 hour:
+
+- make another request
+- prove cache expired
+- prove a new token/config was fetched
+- capture evidence
+
+Also explain what observable evidence proves each step (logs, token identifiers, timestamps, downstream request count, Splunk logs, etc.).
+
+13. If waiting 1 hour is NOT necessary, propose a technically equivalent test using a shorter TTL such as 60 or 120 seconds and explain why that validates the same logic.
+
+14. Check whether reducing the TTL for testing would change the code path or whether it exercises exactly the same cache expiry logic.
+
+15. Highlight any risk where testing only "wait 1 hour and make another API call" could produce a false positive without actually proving that cache expiry/refresh occurred.
+
+Do not give a generic caching explanation.
+
+Base the conclusion ONLY on the actual code, installed dependency versions, configuration and tests in this repository.
+
+At the end provide:
+
+Final recommendation
+
+- Is 1-hour QA waiting required? YES / NO / PARTIALLY
+- Technical reason
+- Existing automated coverage
+- Missing coverage
+- Minimum QA test required
+- Evidence QA should capture
+- Any additional test cases that should be added
