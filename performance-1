@@ -1,0 +1,5 @@
+During FY26, I strengthened my Node.js, Jest, Supertest, API automation and Playwright capability within NZ Open Banking. I applied this learning to backend/API and integration testing across payment, consent and onboarding journeys.
+
+I contributed to the journey-test uplift by reviewing Jest and Postman coverage and supporting reusable Playwright automation, integration testing and database verification. I also participated in repository-consolidation and migration discussions, raising risks involving MongoDB consistency, pipelines, rollback, recovery and observability.
+
+Using OpenShift, Splunk and Dynatrace during DR and production-risk validation strengthened my deployment and monitoring knowledge. I shared testing insights through team discussions and reviews. My next focus is to deepen my Kubernetes, Helm and contract-testing skills, expand CI/CD automation, deliver stable Playwright journey coverage and conduct structured knowledge-sharing sessions.
