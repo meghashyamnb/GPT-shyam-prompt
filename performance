@@ -1,0 +1,21 @@
+WHAT I delivered:
+
+During FY26, I contributed to the quality, resilience and risk management of NZ Open Banking services through backend and API testing across OAuth2/OIDC, consent, payment initiation, Hybrid/ACF and CIBA journeys. I designed and executed functional, integration, negative and regression testing covering authentication, mandatory headers, idempotency, error handling, data persistence and downstream interactions. My testing considered expected customer journeys and failure scenarios so defects, dependencies and residual risks were visible before release decisions.
+
+For the Aggregator Configuration and Third-Party Provider repository consolidation, I applied a risk-based approach and identified important areas including rollback readiness, configuration and MongoDB consistency, pipeline replay, onboarding CRUD operations, existing TPP regression, environment isolation, failure recovery and logging. This strengthened coverage and gave stakeholders clearer evidence when assessing release readiness.
+
+I validated the cache TTL correction following the dependency change from seconds to milliseconds, including the expected one-hour expiry behaviour and consistency across environments. I created coverage for positive, boundary and expiry scenarios to reduce the risk of stale or prematurely removed cache data. I also supported disaster-recovery migration verification by checking application and pod health and reviewing logs and monitoring information through OpenShift, Splunk and Dynatrace.
+
+I contributed to improving the testing approach by supporting stronger integration and database verification and participating in discussions on moving suitable Postman journey coverage toward maintainable Playwright end-to-end automation. This supports earlier defect detection, reliable regression and a stronger shift-left model.
+
+Alongside delivery work, I maintained operational disciplines, including timely timesheets against the correct PPM codes, responsible management of assigned assets, leave planning through SuccessFactors, asset-audit compliance and timely completion or escalation of assigned actions in line with ANZ processes.
+
+HOW I delivered:
+
+I demonstrated ownership by engaging early, asking focused questions when requirements or acceptance criteria were unclear, documenting risks and test evidence, and escalating blockers with relevant context. Where documentation or scope was evolving, I converted discussions into testable scenarios and clearly communicated completed coverage, outstanding dependencies and residual risks.
+
+I collaborated with developers, testers, business analysts, product stakeholders and NZ engineering colleagues to clarify expected behaviour and support informed decisions. I shared my testing perspective respectfully, listened to alternative views and constructively challenged assumptions when customer impact, security, operational resilience or production readiness could be affected. I supported knowledge sharing and helped reinforce that quality is a shared responsibility rather than only a final testing activity.
+
+I remained adaptable when priorities, team arrangements and technical scope changed, while balancing delivery speed with appropriate quality and non-financial-risk controls. I maintained accountability for assigned work and communicated progress, dependencies and concerns throughout the delivery cycle.
+
+I strengthened my technical capability in Node.js, Jest, Supertest, Playwright, Open Banking standards and BIAN-related concepts. I applied this learning to improve test design, understand service interactions and contribute more effectively to technical discussions. Overall, I demonstrated ANZ values through integrity, accountability, respectful collaboration, continuous learning and a consistent focus on safe, reliable and customer-centred outcomes. Going forward, I will continue increasing automation, quantifying quality improvements and building deeper Open Banking domain leadership.
