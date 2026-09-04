@@ -1,0 +1,5 @@
+During FY26, I strengthened my Open Banking domain knowledge through work on OAuth2/OIDC, consent, payment initiation, Third-Party and Fourth-Party onboarding, and Rehearsal support. This increased my independence in analysing end-to-end banking workflows, service dependencies, security controls, data flows and failure scenarios.
+
+I began developing foundational BIAN knowledge covering service domains, service-oriented architecture and contract-based integration. I applied this perspective during discussions on repository consolidation, migration initiatives and journey-test uplift, helping identify testing impacts and risks across service boundaries. I also shared domain and testing insights through team discussions and reviews.
+
+This objective remains in progress. My next focus is to complete a BIAN learning plan, participate in architecture reviews, document mappings between Open Banking services and BIAN domains, and conduct a knowledge-sharing session with the team.
