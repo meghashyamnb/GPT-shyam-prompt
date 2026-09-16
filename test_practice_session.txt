@@ -1,0 +1,25 @@
+Hi everyone,
+
+Our next 30-minute Test Practice session will be an interactive challenge:
+
+One payment, two transactions—what would you test?
+
+A fictional customer retries a payment after a network timeout, and the app shows two matching transactions. Working in mixed mobile/backend groups, we’ll explore possible explanations and design tests to distinguish them.
+
+Your challenge: Agree on two plausible explanations and select only three tests. Explain the expected behaviour and the evidence each test would provide.
+
+Agenda
+
+- 0–4 minutes: Scenario briefing and joining breakout rooms.
+- 4–14 minutes: Discuss initial explanations, then use Copilot to challenge your reasoning.
+- 14–24 minutes: Review new evidence and refine your three tests.
+- 24–26 minutes: Submit findings and return.
+- 26–29 minutes: Three groups share one key insight each.
+- 29–30 minutes: Closing takeaway.
+
+Please check your approved GitHub Copilot Chat access beforehand and let us know if you can operate it for a group. Participants without access can pair with someone who has it.
+
+All groups will submit their findings. We’ll focus on test quality, evidence and what changed our thinking.
+
+Thanks,
+Test Practice Coordinators
