@@ -1,0 +1,656 @@
+# Helm Migration and CS1–CS2 Deployment Test Plan
+
+## 1. Objective
+
+Validate that the migration from the existing deployment model to Helm:
+
+- preserves all required legacy configuration and deployment behaviour
+- produces valid Kubernetes/OpenShift resources
+- complies with deployment policies
+- deploys successfully to all intended deployment targets
+- maintains equivalent configuration between CS1 and CS2 where required
+- prevents invalid configuration from reaching deployment
+- supports safe rollout, health verification and rollback
+- does not introduce service availability or configuration regressions
+
+---
+
+## 2. Scope
+
+### In Scope
+
+- Helm chart structure
+- Chart.yaml
+- values.yaml
+- environment-specific values files
+- Helm templates
+- rendered manifests
+- legacy `.properties` files
+- legacy application/deployment templates
+- deployment scripts
+- pipeline/shared-library changes
+- ConfigMaps
+- Secret/Vault references
+- Services
+- Routes/Ingress
+- resource requests/limits
+- readiness/liveness probes
+- policy-as-code validation
+- CI/CD deployment gates
+- CS1 deployment
+- CS2 deployment
+- CS1/CS2 parity
+- canary/staged deployment where applicable
+- rollback
+- Helm release tests
+- application/API smoke tests
+
+### Out of Scope
+
+Unless specifically required:
+
+- full application functional regression
+- performance/load testing
+- infrastructure provisioning
+- destructive production testing
+- security penetration testing
+
+---
+
+## 3. Test Approach
+
+Testing will be performed in layers:
+
+```text
+Legacy configuration comparison
+        ↓
+Helm lint
+        ↓
+Helm template/render
+        ↓
+Kubernetes schema validation
+        ↓
+Policy validation
+        ↓
+CI/CD target-resolution validation
+        ↓
+Deployment to target
+        ↓
+Readiness/health validation
+        ↓
+Helm release tests
+        ↓
+API smoke
+        ↓
+CS1/CS2 parity
+        ↓
+Rollback/recovery
+```
+
+---
+
+## 4. Legacy-to-Helm Migration Validation
+
+Compare the existing deployment implementation against the new Helm implementation.
+
+For every legacy configuration property capture:
+
+| Legacy property | Environment | Previous usage | New Helm/pipeline source | Rendered destination | Status |
+|---|---|---|---|---|---|
+| | | | | | MIGRATED / RENAMED / DERIVED / EXTERNALISED / INTENTIONALLY_REMOVED / MISSING / NEEDS_CLARIFICATION |
+
+Validate:
+
+- no required legacy property disappears
+- renamed values retain equivalent behaviour
+- externally injected pipeline values are accounted for
+- intentionally removed configuration has justification
+- environment-specific values remain correct
+- sensitive values remain Secret/Vault-managed
+
+Any required `MISSING` configuration is considered a migration defect.
+
+---
+
+## 5. Legacy Deployment Behaviour Parity
+
+Compare the previous deployment template/scripts against the new rendered Helm resources.
+
+Validate:
+
+| Area | Validation |
+|---|---|
+| Replicas | Previous and new intended replica behaviour |
+| Image | Correct repository and version |
+| Labels | Required labels preserved |
+| Selectors | Correct and upgrade-safe |
+| Environment variables | Required values preserved |
+| ConfigMaps | Correct data/reference |
+| Secrets | Correct Secret/Vault reference |
+| Resources | CPU/memory preserved or intentionally changed |
+| Probes | Readiness/liveness behaviour preserved |
+| Volumes | Required volumes/mounts preserved |
+| Service | Selector and ports correct |
+| Route/Ingress | Host/backend/TLS correct |
+| Deployment strategy | Equivalent or approved change |
+| Rollback | Recovery behaviour preserved |
+
+---
+
+## 6. Helm Static Validation
+
+### Helm Lint
+
+Execute for the chart and relevant values files.
+
+Validate:
+
+- no lint errors
+- strict lint findings reviewed
+- Chart.yaml metadata valid
+- templates syntactically correct
+
+### Helm Render
+
+Render every supported environment independently.
+
+Validate:
+
+- no unresolved Helm expressions
+- no unexpected empty values
+- correct namespaces
+- correct resource names
+- correct environment-specific configuration
+
+---
+
+## 7. Helm Value Negative Testing
+
+Test high-risk values with:
+
+- missing required value
+- empty value
+- null
+- wrong datatype
+- invalid enum/value
+- invalid CPU/memory quantity
+- missing environment override
+- malformed hostname
+- invalid service account
+
+For boolean values compare:
+
+```bash
+--set FLAG=false
+```
+
+against:
+
+```bash
+--set-string FLAG=false
+```
+
+Expected:
+
+Boolean-like strings must not unexpectedly enable a conditional branch.
+
+---
+
+## 8. Environment Validation
+
+Render each configured environment/value set independently.
+
+Compare:
+
+| Configuration | Env A | Env B | Env C | Env D |
+|---|---|---|---|---|
+| Image | | | | |
+| Replicas | | | | |
+| Runtime environment | | | | |
+| CPU request | | | | |
+| CPU limit | | | | |
+| Memory request | | | | |
+| Memory limit | | | | |
+| Service account | | | | |
+| Secret provider | | | | |
+| Route/domain | | | | |
+| Feature toggles | | | | |
+| Mock configuration | | | | |
+
+Validate that defaults do not unintentionally leak between environments.
+
+---
+
+## 9. Kubernetes/OpenShift Resource Validation
+
+Validate rendered resources for:
+
+- API version
+- resource kind
+- name
+- namespace
+- labels
+- annotations
+- selectors
+- pod-template labels
+- image/tag
+- ports
+- environment variables
+- ServiceAccount
+- ConfigMaps
+- Secrets
+- volumes
+- resource requests/limits
+- readiness probe
+- liveness probe
+- startup probe where applicable
+- deployment strategy
+
+Use schema validation where the approved validation tool is available.
+
+---
+
+## 10. Policy-as-Code Validation
+
+Validate the actual project policy mechanism.
+
+Test:
+
+| Scenario | Expected |
+|---|---|
+| Valid manifest | PASS |
+| Required field missing | FAIL |
+| Incorrect value | FAIL |
+| Incorrect case | FAIL where policy is case-sensitive |
+| Incorrect YAML location | FAIL |
+| Multiple violations | Violations clearly reported |
+| Policy unavailable | Behaviour matches pipeline design |
+| Policy violation | Deployment stage does not execute |
+
+Verify deployment is blocked when a mandatory policy rule fails.
+
+---
+
+## 11. Deployment Target Resolution — CS1 and CS2
+
+Validate the pipeline/emulation logic that determines deployment targets.
+
+Expected deployment matrix:
+
+| Target | Expected deployment | Namespace/project | Chart/version | Image/version | Values source |
+|---|---:|---|---|---|---|
+| CS1 | Yes | | | | |
+| CS2 | Yes | | | | |
+
+Validate:
+
+- CS1 is selected correctly
+- CS2 is selected correctly
+- both are selected when dual deployment is required
+- wrong target is not selected
+- target-specific namespace/project is correct
+- target-specific configuration is resolved correctly
+- deployment plan can be inspected before deployment
+
+---
+
+## 12. CS1–CS2 Deployment Parity
+
+After deployment compare:
+
+| Item | CS1 | CS2 | Expected |
+|---|---|---|---|
+| Application version | | | Match |
+| Helm/chart version | | | Match |
+| Image | | | Match |
+| Replicas | | | Match or approved difference |
+| Resources | | | Match or approved difference |
+| Probes | | | Match |
+| Service | | | Equivalent |
+| Configuration | | | Equivalent |
+| Secret references | | | Correct |
+| Policy result | | | PASS |
+| Pod readiness | | | PASS |
+
+Any differences must be classified as either:
+
+- intentional
+- environment/target specific
+- configuration drift
+- defect
+
+---
+
+## 13. Partial Deployment Failure
+
+Test:
+
+### CS1 succeeds, CS2 fails
+
+Verify:
+
+- pipeline clearly reports partial failure
+- release is not incorrectly marked fully successful
+- expected rollback/recovery behaviour occurs
+- versions on both targets are visible
+
+### CS1 fails
+
+Verify whether:
+
+- CS2 deployment should continue
+- pipeline should stop immediately
+- rollback is required
+
+Expected behaviour must be agreed with DevOps/platform owners.
+
+---
+
+## 14. Idempotency
+
+Run the same deployment again with no configuration change.
+
+Expected:
+
+- no duplicate resources
+- no unexpected replacement
+- no unintended configuration drift
+- both targets remain on the expected version
+- deployment completes safely
+
+---
+
+## 15. Readiness and Availability
+
+Validate:
+
+- pods become Ready before traffic
+- failed readiness prevents traffic
+- liveness behaviour is correct
+- expected replicas become available
+- stable version remains available during rollout
+- Service routes only to appropriate pods
+
+Where relevant validate:
+
+- maxUnavailable
+- maxSurge
+- termination behaviour
+- graceful shutdown
+
+---
+
+## 16. Canary / Staged Deployment
+
+Where applicable test:
+
+### New version healthy
+
+Expected:
+
+- new pods become Ready
+- traffic is shifted according to configured strategy
+- stable version remains available until promotion
+
+### New version unhealthy
+
+Expected:
+
+- new version does not receive unintended traffic
+- stable version continues serving
+- promotion does not occur
+
+### Canary commit
+
+Expected:
+
+- new version becomes the active version
+- routing changes correctly
+
+---
+
+## 17. Rollback
+
+Validate:
+
+- rollback command/function identifies correct previous version
+- previous configuration remains usable
+- traffic returns to stable version
+- pods become Ready
+- Service/Route points to expected version
+- no orphaned resources affect traffic
+
+Also test rollback after:
+
+- failed CS1 deployment
+- failed CS2 deployment
+- partial CS1/CS2 deployment where safe
+
+---
+
+## 18. Helm Release Tests
+
+Check whether the chart contains:
+
+```text
+templates/tests/
+```
+
+and resources using:
+
+```yaml
+helm.sh/hook: test
+```
+
+Recommended initial tests:
+
+### Service Health Test
+
+Validate:
+
+```text
+Helm test workload
+→ Service DNS
+→ Service port
+→ application health endpoint
+→ expected successful response
+```
+
+### Release Version Test
+
+Where a safe application version endpoint exists:
+
+```text
+Expected version
+→ deployed Service
+→ application version endpoint
+→ actual version
+```
+
+Validate against both CS1 and CS2.
+
+Example execution in an authorised environment:
+
+```bash
+helm test <release-name> --logs
+```
+
+Possible statuses:
+
+- CONFIGURED
+- NOT_CONFIGURED
+- NOT_RUN
+- PASS
+- FAIL
+
+Absence of Helm tests is not automatically a deployment defect.
+
+---
+
+## 19. API Smoke Validation
+
+After successful deployment verify agreed critical endpoints.
+
+Minimum coverage:
+
+- health endpoint
+- readiness endpoint
+- one successful application API call
+- authentication/authorisation where relevant
+- critical dependency integration where safe
+
+Helm tests should not replace full API regression automation.
+
+---
+
+## 20. Configuration and Secret Validation
+
+Verify:
+
+- ConfigMap values are correctly injected
+- required configuration exists
+- Secret references exist
+- Vault/external-secret branch works where applicable
+- sensitive values are not accidentally placed in ConfigMaps
+- Secret contents are never printed during testing
+
+Test both secret-provider enabled and disabled paths where supported.
+
+---
+
+## 21. Upgrade Safety
+
+Check:
+
+- immutable selectors
+- version labels used in selectors
+- workload naming changes
+- Service selector changes
+- ConfigMap/Secret naming changes
+- Route/Ingress backend changes
+- resource-name changes
+
+Expected:
+
+Existing release can be safely upgraded without requiring unexpected manual deletion/recreation.
+
+---
+
+## 22. Observability
+
+Validate where applicable:
+
+- application logs available
+- deployment target identifiable
+- metrics remain available
+- tracing configuration preserved
+- alerting annotations/metadata preserved
+- CS1 and CS2 failures can be distinguished operationally
+
+---
+
+## 23. Negative / Failure Scenarios
+
+Prioritise:
+
+| Priority | Scenario |
+|---|---|
+| P0 | Required legacy property not migrated |
+| P0 | CS2 omitted from deployment targets |
+| P0 | Wrong target/namespace selected |
+| P0 | CS1 success + CS2 failure |
+| P0 | Rollback fails |
+| P0 | Unready new version receives traffic |
+| P1 | Boolean `"false"` interpreted incorrectly |
+| P1 | Empty required Helm value |
+| P1 | Wrong Service targetPort |
+| P1 | Missing Secret reference |
+| P1 | Invalid resource quantity |
+| P1 | Policy violation does not block deployment |
+| P1 | Version mismatch between CS1 and CS2 |
+| P2 | Mutable image tag |
+| P2 | Unused configuration |
+| P2 | Missing optional Helm release tests |
+
+---
+
+## 24. Entry Criteria
+
+Testing starts when:
+
+- migration changes are available
+- relevant Helm chart is available
+- base/legacy version is identifiable
+- deployment requirements are understood
+- target environments are available
+- required pipeline changes are available
+- required policy configuration is accessible
+
+---
+
+## 25. Exit Criteria
+
+Testing can be considered complete when:
+
+- no unresolved Critical/High confirmed defect remains
+- all required legacy settings are accounted for
+- Helm lint/render complete successfully
+- required policy checks pass
+- deployment target selection is correct
+- CS1 and CS2 deploy as expected
+- CS1/CS2 required parity is confirmed
+- health/readiness checks pass
+- required Helm release tests/smoke tests pass
+- rollback behaviour is proven or explicitly accepted
+- unresolved risks are documented and accepted
+
+---
+
+## 26. Evidence
+
+Capture:
+
+- Helm lint result
+- rendered-manifest evidence
+- migration matrix
+- environment comparison
+- policy output
+- pipeline target-resolution output
+- CS1/CS2 version evidence
+- pod readiness
+- Helm test output
+- API smoke result
+- rollback result
+- screenshots/log references where needed
+
+Do not capture secret values.
+
+---
+
+## 27. Final Test Summary
+
+Report:
+
+```text
+Legacy migration parity:
+Helm lint:
+Helm render:
+Schema:
+Policy:
+CS1 deployment:
+CS2 deployment:
+CS1/CS2 parity:
+Readiness:
+Helm release tests:
+API smoke:
+Canary/staged deployment:
+Rollback:
+
+Critical defects:
+High defects:
+Medium defects:
+Needs clarification:
+
+Overall:
+PASS / FAIL / NEEDS_REVIEW
+```
