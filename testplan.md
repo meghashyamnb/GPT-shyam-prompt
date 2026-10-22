@@ -65,11 +65,45 @@ Unless specifically required by the story:
 
 ---
 
-# 3. Test Strategy
+## 3. Test Strategy
 
-## 3. Test Approach
+The testing strategy will follow a **risk-based, layered validation model** focused on migration completeness, deployment safety, policy compliance, multi-target consistency, runtime health and recovery.
 
-Testing will be performed across multiple validation layers to verify migration completeness, deployment correctness, policy compliance, multi-target deployment and runtime health.
+Testing will prioritise risks that could result in:
+
+- Required legacy configuration being lost during migration
+- Invalid or non-compliant manifests reaching deployment
+- Deployment to an incorrect or incomplete target
+- Configuration or version drift between CS1 and CS2
+- Unhealthy workloads receiving traffic
+- Partial deployment being incorrectly reported as successful
+- Application-level failures after technically successful deployment
+- Inability to safely recover or roll back
+
+### Validation Principles
+
+A successful Helm lint or Helm render alone will **not** be considered sufficient evidence of deployment correctness.
+
+Deployment quality will be assessed across:
+
+**Configuration → Rendered Manifest → Policy → Deployment Target → Runtime Health → Multi-target Parity → Recovery**
+
+### Key Quality Gates
+
+- Required legacy configuration must be accounted for before migration sign-off.
+- Mandatory policy violations must prevent deployment.
+- Expected deployment targets must be resolved before deployment execution.
+- CS1 and CS2 must run the expected release and configuration unless an approved difference exists.
+- New workloads must become Ready before receiving traffic.
+- Partial deployment failures must be clearly detectable.
+- Critical API smoke validation must pass after deployment.
+- Rollback/recovery behaviour must be defined and validated where applicable.
+
+---
+
+## 4. Test Approach
+
+Testing will be executed through multiple validation layers.
 
 | Stage | Validation | Key Outcome |
 |---|---|---|
@@ -85,28 +119,6 @@ Testing will be performed across multiple validation layers to verify migration 
 | 10. API Smoke Validation | Execute agreed critical API smoke tests | Confirm the deployed application is functionally reachable |
 | 11. CS1 / CS2 Parity | Compare versions and effective deployment configuration across targets | Detect configuration/version drift |
 | 12. Rollback / Recovery | Validate rollback and partial-failure recovery | Confirm the service can safely return to a stable state |
-
-### Validation Principle
-
-A successful Helm lint or Helm render alone will **not** be considered sufficient evidence of deployment correctness.
-
-Validation will progressively cover:
-
-**Configuration → Rendered Manifest → Policy → Deployment Target → Runtime Health → Multi-target Parity → Recovery**
-
-### Key Quality Gates
-
-- Required legacy configuration must be accounted for before migration sign-off.
-- Mandatory policy violations must prevent deployment.
-- Expected deployment targets must be resolved before deployment execution.
-- CS1 and CS2 must run the expected release and configuration unless an approved difference exists.
-- New workloads must become Ready before receiving traffic.
-- Partial deployment failures must be clearly detectable.
-- Critical API smoke validation must pass after deployment.
-- Rollback/recovery behaviour must be defined and validated where applicable.
-A successful Helm render alone will not be considered sufficient evidence of deployment correctness.
-
----
 
 # 4. Legacy-to-Helm Migration Validation
 
